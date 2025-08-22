@@ -3,5 +3,5 @@ using UnityEngine;
 
 public class CoroutineRunnerMonoBehaviour : MonoBehaviour, ICoroutineRunner
 {
-    public Coroutine StartCoroutine(IEnumerator routine) => base.StartCoroutine(routine);
+    public new Coroutine StartCoroutine(IEnumerator routine) => base.StartCoroutine(routine);
 }

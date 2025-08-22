@@ -51,28 +51,27 @@ public class AvoidanceField
         forward.y = 0f;
         forward.Normalize();
 
-        Vector3 sideDir = Vector3.Cross(Vector3.up, forward).normalized;
+        Vector3 sideDirection = Vector3.Cross(Vector3.up, forward).normalized;
         
-        if (sideDir.sqrMagnitude < 1e-6f)
-            sideDir = Vector3.right;
+        if (sideDirection.sqrMagnitude < 1e-6f)
+            sideDirection = Vector3.right;
 
         Vector3 ahead = position + forward * settings.EdgeProbeAhead;
 
         int groundMask = settings.GroundMask.value == 0 ? Physics.DefaultRaycastLayers : settings.GroundMask.value;
-
-        bool leftHasGround  = Physics.Raycast(ahead - sideDir * settings.EdgeProbeSide + Vector3.up * 0.2f, Vector3.down, settings.EdgeProbeDown, groundMask, QueryTriggerInteraction.Ignore);
-        bool rightHasGround = Physics.Raycast(ahead + sideDir * settings.EdgeProbeSide + Vector3.up * 0.2f, Vector3.down, settings.EdgeProbeDown, groundMask, QueryTriggerInteraction.Ignore);
+        bool leftHasGround  = Physics.Raycast(ahead - sideDirection * settings.EdgeProbeSide + Vector3.up * 0.2f, Vector3.down, settings.EdgeProbeDown, groundMask, QueryTriggerInteraction.Ignore);
+        bool rightHasGround = Physics.Raycast(ahead + sideDirection * settings.EdgeProbeSide + Vector3.up * 0.2f, Vector3.down, settings.EdgeProbeDown, groundMask, QueryTriggerInteraction.Ignore);
         bool aheadHasGround = Physics.Raycast(ahead + Vector3.up * 0.2f, Vector3.down, settings.EdgeProbeDown, groundMask, QueryTriggerInteraction.Ignore);
         
         if (leftHasGround != rightHasGround)
         {
-            Vector3 push = (leftHasGround ? -sideDir : sideDir) * settings.EdgeAvoidStrength;
+            Vector3 push = (leftHasGround ? -sideDirection : sideDirection) * settings.EdgeAvoidStrength;
             result += push;
         }
         
         if (!aheadHasGround)
         {
-            Vector3 lateral = leftHasGround && !rightHasGround ? -sideDir : rightHasGround && !leftHasGround ?  sideDir : Vector3.zero;
+            Vector3 lateral = leftHasGround && !rightHasGround ? -sideDirection : rightHasGround && !leftHasGround ?  sideDirection : Vector3.zero;
             result += (lateral - forward) * (settings.EdgeAvoidStrength * 0.6f);
         }
 

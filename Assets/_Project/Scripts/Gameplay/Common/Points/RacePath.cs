@@ -10,7 +10,6 @@ public class RacePath
     private readonly float totalLen;
 
     public bool IsValid => points != null && points.Length >= 2;
-    public float TotalLength => totalLen;
     
     public RacePath(CheckPoints[] pointsArray)
     {
