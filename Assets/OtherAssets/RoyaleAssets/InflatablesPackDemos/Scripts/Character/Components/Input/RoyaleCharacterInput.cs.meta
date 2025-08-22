@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 6bea44d812836c048948def752a15a9c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 182866
+  packageName: Inflatables Pack
+  packageVersion: 1.0
+  assetPath: Assets/RoyaleAssets/InflatablesPackDemos/Scripts/Character/Components/Input/RoyaleCharacterInput.cs
+  uploadId: 400205

@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 07906aeb2dc2d794ea108771366ecef1
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 182866
+  packageName: Inflatables Pack
+  packageVersion: 1.0
+  assetPath: Assets/RoyaleAssets/InflatablesPackDemos/Scripts/Common/Displacement/GroundHitInfo.cs
+  uploadId: 400205

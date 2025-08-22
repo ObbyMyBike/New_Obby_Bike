@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: b5221a35dd2b13c4ebdaeb1d5432721f
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 182866
+  packageName: Inflatables Pack
+  packageVersion: 1.0
+  assetPath: Assets/RoyaleAssets/InflatablesPack/Shaders/PropertyColor.shader
+  uploadId: 400205

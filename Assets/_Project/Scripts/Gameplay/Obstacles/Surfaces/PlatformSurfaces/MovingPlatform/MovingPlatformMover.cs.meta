@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c8b3d70af3c9b314288b2669c6d7a71e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 182866
+  packageName: Inflatables Pack
+  packageVersion: 1.0
+  assetPath: Assets/RoyaleAssets/InflatablesPackDemos/Scripts/Obstacles/Surfaces/PlatformSurfaces/MovingPlatform/MovingPlatformMover.cs
+  uploadId: 400205

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: ad15a8eb25aa7b546a72c068a4bfc596
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 182866
+  packageName: Inflatables Pack
+  packageVersion: 1.0
+  assetPath: Assets/RoyaleAssets/InflatablesPackDemos/Scripts/RoyaleAssets.InflatablesGameDemo.asmdef
+  uploadId: 400205

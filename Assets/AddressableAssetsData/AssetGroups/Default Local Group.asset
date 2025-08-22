@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: d2501814727405d4a856cfb96e52785d
+  m_SerializeEntries:
+  - m_GUID: aa11bc780223049409849f1e4abcba61
+    m_Address: Assets/_Project/Vizual/Prefabs/Skins/PlayerSkin1.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: eba695b01042822428c7a38f379524c3
+    m_Address: Assets/_Project/Vizual/Prefabs/Skins/PlayerSkin2.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f4d6f65bba9622f40a0ced5e51084130
+    m_Address: Assets/_Project/Vizual/Prefabs/Skins/PlayerSkin3.prefab
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 4b41ebbae6ca05740ad4b65bcd0cd566, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 3b59bfb10e2adce4db7fa4521ccc3014, type: 2}
+    - {fileID: 11400000, guid: b61d9e262152568439dd1a946fd59427, type: 2}

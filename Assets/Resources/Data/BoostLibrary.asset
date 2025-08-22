@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7f3435d30d2b934e97d18e0f7ca8e5b, type: 3}
+  m_Name: BoostLibrary
+  m_EditorClassIdentifier: 
+  Presets:
+  - PresetName: SpeedBoost
+    BoostType: 0
+    SpeedMultiplier: 2.5
+    DecelerationTime: 1
+    LaunchDistanceX: 0
+    LaunchDistanceZ: 0
+    LandingHeight: 0
+    LaunchAngle: 0
+    DetectionRadius: 0
+    LaunchForce: 1
+    CustomBounceDirection: {x: 0, y: 0, z: 0}
+    BounceForce: 0
+    MinImpactSpeed: 0
+    BounceCooldown: 0
+    KeepHorizontalVelocity: 0
+    UseSurfaceNormal: 0
+    AccelerationMultiplier: 8
+    AccelerationDuration: 120
+    JumpMultiplier: 1.5
+    JumpDuration: 5
+  - PresetName: LaunchBoost
+    BoostType: 1
+    SpeedMultiplier: 0
+    DecelerationTime: 0
+    LaunchDistanceX: 0
+    LaunchDistanceZ: 190
+    LandingHeight: 0
+    LaunchAngle: 20
+    DetectionRadius: 3
+    LaunchForce: 1
+    CustomBounceDirection: {x: 0, y: 0, z: 0}
+    BounceForce: 0
+    MinImpactSpeed: 0
+    BounceCooldown: 0
+    KeepHorizontalVelocity: 0
+    UseSurfaceNormal: 0
+    AccelerationMultiplier: 8
+    AccelerationDuration: 120
+    JumpMultiplier: 1.5
+    JumpDuration: 5
+  - PresetName: Trampoline
+    BoostType: 2
+    SpeedMultiplier: 0
+    DecelerationTime: 0
+    LaunchDistanceX: 0
+    LaunchDistanceZ: 0
+    LandingHeight: 0
+    LaunchAngle: 0
+    DetectionRadius: 0
+    LaunchForce: 1
+    CustomBounceDirection: {x: 0, y: 0, z: 0}
+    BounceForce: 50
+    MinImpactSpeed: 5
+    BounceCooldown: 0.15
+    KeepHorizontalVelocity: 0
+    UseSurfaceNormal: 1
+    AccelerationMultiplier: 8
+    AccelerationDuration: 120
+    JumpMultiplier: 1.5
+    JumpDuration: 5
+  - PresetName: AsselerationBoost
+    BoostType: 3
+    SpeedMultiplier: 20
+    DecelerationTime: 1
+    LaunchDistanceX: 0
+    LaunchDistanceZ: 0
+    LandingHeight: 0
+    LaunchAngle: 0
+    DetectionRadius: 0
+    LaunchForce: 1
+    CustomBounceDirection: {x: 0, y: 0, z: 0}
+    BounceForce: 50
+    MinImpactSpeed: 5
+    BounceCooldown: 0.15
+    KeepHorizontalVelocity: 0
+    UseSurfaceNormal: 1
+    AccelerationMultiplier: 25
+    AccelerationDuration: 120
+    JumpMultiplier: 1.5
+    JumpDuration: 5
+  - PresetName: JumpBoost
+    BoostType: 5
+    SpeedMultiplier: 25
+    DecelerationTime: 1
+    LaunchDistanceX: 0
+    LaunchDistanceZ: 0
+    LandingHeight: 0
+    LaunchAngle: 0
+    DetectionRadius: 0
+    LaunchForce: 1
+    CustomBounceDirection: {x: 0, y: 0, z: 0}
+    BounceForce: 50
+    MinImpactSpeed: 5
+    BounceCooldown: 0.15
+    KeepHorizontalVelocity: 0
+    UseSurfaceNormal: 1
+    AccelerationMultiplier: 8
+    AccelerationDuration: 120
+    JumpMultiplier: 30
+    JumpDuration: 120
+  - PresetName: Rocket
+    BoostType: 4
+    SpeedMultiplier: 25
+    DecelerationTime: 1
+    LaunchDistanceX: 0
+    LaunchDistanceZ: 180
+    LandingHeight: 0
+    LaunchAngle: 40
+    DetectionRadius: 0
+    LaunchForce: 2
+    CustomBounceDirection: {x: 0, y: 0, z: 0}
+    BounceForce: 50
+    MinImpactSpeed: 5
+    BounceCooldown: 0.15
+    KeepHorizontalVelocity: 0
+    UseSurfaceNormal: 1
+    AccelerationMultiplier: 8
+    AccelerationDuration: 120
+    JumpMultiplier: 30
+    JumpDuration: 120

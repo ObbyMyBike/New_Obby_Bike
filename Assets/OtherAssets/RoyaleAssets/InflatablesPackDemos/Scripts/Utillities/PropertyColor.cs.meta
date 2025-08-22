@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4977b1655ea795d4dbfec3f9bb466dbc
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 182866
+  packageName: Inflatables Pack
+  packageVersion: 1.0
+  assetPath: Assets/RoyaleAssets/InflatablesPackDemos/Scripts/Utillities/PropertyColor.cs
+  uploadId: 400205
