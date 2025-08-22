@@ -5,7 +5,7 @@ using Random = UnityEngine.Random;
 public class BotInputAI : IInput
 {
     public event Action Jumped;
-    public event Action Pushed;
+    public event Action Pushed { add {} remove {} }
 
     private readonly SmartBotParams settings;
     private readonly Transform bot;

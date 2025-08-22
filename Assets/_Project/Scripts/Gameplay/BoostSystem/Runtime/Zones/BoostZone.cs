@@ -117,18 +117,14 @@ public class BoostZone : MonoBehaviour
                 break;
 
             case BoostType.Launcher:
-                
-                if (_launchArcCache.CachedArc.IsValid && _launchDispatcher.TryLaunch(target, GetLaunchPoint(), _launchArcCache.CachedArc,
-                        ref _lastBounceTime, BoostZoneConstants.CooldownSeconds, BoostZoneConstants.DefaultClearProbeRadius,
-                        BoostZoneConstants.DefaultCollisionOffFrames));
+                _launchDispatcher.TryLaunch(target, GetLaunchPoint(), _launchArcCache.CachedArc, ref _lastBounceTime, BoostZoneConstants.CooldownSeconds, 
+                    BoostZoneConstants.DefaultClearProbeRadius, BoostZoneConstants.DefaultCollisionOffFrames);
                 
                 break;
 
             case BoostType.Rocket:
-                
-                if (_launchArcCache.CachedArc.IsValid && _launchDispatcher.TryLaunch(target, GetLaunchPoint(), _launchArcCache.CachedArc, 
-                        ref _lastBounceTime, BoostZoneConstants.RocketCooldownSeconds, BoostZoneConstants.DefaultClearProbeRadius,
-                        BoostZoneConstants.DefaultCollisionOffFrames)) ;
+                _launchDispatcher.TryLaunch(target, GetLaunchPoint(), _launchArcCache.CachedArc, ref _lastBounceTime, BoostZoneConstants.RocketCooldownSeconds, 
+                    BoostZoneConstants.DefaultClearProbeRadius, BoostZoneConstants.DefaultCollisionOffFrames);
                 
                 break;
 

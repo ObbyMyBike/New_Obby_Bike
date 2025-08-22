@@ -17,6 +17,23 @@ public class PlayerConfig : ScriptableObject
     [Tooltip("Базовое затухание боковой скорости")] public float LateralFriction = 5f;
     [Tooltip("Коэффициент ускорения")] public float MinInputThreshold = 0.01f;
     
+    [Header("Input Shaping")]
+    [Tooltip("Мёртвая зона джойстика")] public float InputDeadzone = 0.12f;
+    [Tooltip("Экспонента кривой стика (>1 = плавнее старт, резче к максимуму)")] public float InputExponent = 1.6f;
+
+    [Header("Stability / Handling")]
+    [Tooltip("Помощь в выравнивании скорости к направлению руля")] public float SteeringAssist = 12f;
+    [Tooltip("Сила быстрого торможения при резкой смене направления")] public float BrakeStrength = 25f;
+    [Tooltip("Порог скорости для триггера быстрого разворота (м/с)")] public float QuickTurnSpeedThreshold = 6f;
+    [Tooltip("Угол между скоростью и желаемым направлением для быстрого разворота")] public float OppositeInputAngle = 120f;
+    [Tooltip("Сила прилипания к земле при небольшом отрыве")] public float GroundStickForce = 30f;
+
+    [Tooltip("Макс. сглаживание при большом заносе")] public float MaxLateralFriction = 18f;
+    [Tooltip("Порог боковой скорости, после которого усиливаем «трение»")] public float LateralSlipThreshold = 6f;
+
+    [Header("Turn Smoothing")]
+    [Tooltip("Минимальное сглаживание поворота при сильном газе")] public float TurnSmoothTimeFast = 0.08f;
+    
     [Header("Jump Settings")]
     public AudioClip JumpClip;
     public float JumpForce = 30f;

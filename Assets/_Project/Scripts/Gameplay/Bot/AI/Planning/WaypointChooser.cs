@@ -53,9 +53,16 @@ public class WaypointChooser
 
             filtered.Add(waypoint);
         }
+
+        if (filtered.Count == 0)
+        {
+            foreach (Waypoint waypoint in options)
+                if (waypoint != null && waypoint != from)
+                    filtered.Add(waypoint);
+        }
         
         if (filtered.Count == 0)
-            filtered = options;
+            return null;
 
         int bestIndex = 0;
         float bestScore = float.NegativeInfinity;
@@ -63,6 +70,10 @@ public class WaypointChooser
         for (int i = 0; i < filtered.Count; i++)
         {
             Waypoint waypoint = filtered[i];
+            
+            if (waypoint == null)
+                continue;
+            
             float random = Random.value;
 
             if (recentWaypoints.Contains(waypoint))

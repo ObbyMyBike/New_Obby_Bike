@@ -2,9 +2,9 @@ using UnityEngine;
 
 public class BotAIController : MonoBehaviour
 {
-    public BotInputAI AI { get; private set; }
+    private BotInputAI _inputAI;
     
-    public void SetAI(BotInputAI ai) => AI = ai;
+    public void SetAI(BotInputAI ai) => _inputAI = ai;
     
-    private void Update() => AI?.Tick();
+    private void Update() => _inputAI?.Tick();
 }
