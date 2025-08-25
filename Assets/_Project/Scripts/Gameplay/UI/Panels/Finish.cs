@@ -25,7 +25,7 @@ public class Finish : MonoBehaviour
             return;
         }
         
-        if (other.TryGetComponent(out BotDriver bot))
+        if (other.TryGetComponent(out BotController bot))
             _botSpawn?.DespawnAndRespawn(bot);
     }
 }

@@ -13,10 +13,11 @@ public class HorizontalBarLayout
     
     public float EvaluateX(float normalizedProgress)
     {
-        float clamped = Mathf.Clamp01(normalizedProgress);
+        float clamp = Mathf.Clamp01(normalizedProgress);
+
         float barWidth = barRect.rect.width;
         float effectiveWidth = Mathf.Max(0f, barWidth - 2f * horizontalPadding);
         
-        return clamped * effectiveWidth - (effectiveWidth * 0.5f) + horizontalPadding;
+        return clamp * effectiveWidth - (effectiveWidth * 0.5f);
     }
 }

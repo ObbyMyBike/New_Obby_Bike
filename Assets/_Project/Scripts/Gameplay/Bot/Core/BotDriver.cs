@@ -1,117 +1,87 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-[RequireComponent(typeof(BotRespawn))]
-public class BotDriver : MonoBehaviour
+public class BotDriver
 {
-    [SerializeField] private Animator _animator;
- 
-    [Header("Movement Settings")]
-    [SerializeField] private float _speed = 3f;
-    [SerializeField] private float _acceleration = 100f;
-    [SerializeField] private float _angularSpeed = 720f;
-    
-    [Header("Jump Settings")]
-    [SerializeField] private float _jumpForce = 30f;
-    [SerializeField] private float _jumpDistance = 1.2f;
+    private readonly Rigidbody rigidbody;
+    private readonly Animations animations;
+    private readonly JumpLogic jump;
+    private readonly BotLocomotion locomotion = new BotLocomotion();
 
-    private IInput _input;
-    private BotLocomotion _botLocomotionHandler;
-    private JumpLogic _jumpLogic;
-    private Animations _animationHandler;
-    
-    private Rigidbody _rigidbody;
-    private LayerMask _groundMask;
-    
-    private PushState _pushState;
-    private BotMoveIntent _moveIntent;
-    private FacingRotator _rotation;
-    private RigidbodyGuard _rigidbodyGuard;
+    private readonly float jumpDistance;
+    private readonly float speed;
+    private readonly float accel;
 
-    private void Awake()
+    private BotMoveIntent _intent;
+    private PushState _push = new PushState();
+    private IInput _subscribedInput;
+    
+    public BotDriver(Rigidbody rigidbody, Animator animator, float jumpForce, float jumpDistance, float speed, float accel)
     {
-        _rigidbody = GetComponent<Rigidbody>();
+        this.rigidbody = rigidbody;
         
-        _rigidbody.freezeRotation = true;
-
-        _groundMask  = ~((1 << gameObject.layer) | (1 << 2));
-
-        _botLocomotionHandler = new BotLocomotion();
-        _jumpLogic = new JumpLogic(_jumpForce);
-        _animationHandler = new Animations(_animator);
-        _rotation = new FacingRotator();
-        _rigidbodyGuard = new RigidbodyGuard();
+        animations = new Animations(animator);
+        jump = new JumpLogic(jumpForce);
+        
+        this.jumpDistance = jumpDistance;
+        this.speed = speed;
+        this.accel = accel;
     }
 
-    private void OnDisable()
-    {
-        if (_input != null)
-            _input.Jumped -= OnJumped;
-    }
-    
-    private void Update()
-    {
-        _moveIntent.UpdateFromInput(_input);
-        
-        if (_pushState.IsSuspended)
-            return;
-
-        bool isGrounded = _jumpLogic.IsGrounded(transform, _jumpDistance, _groundMask);
-
-        if (_moveIntent.ConsumeJumpRequest())
-            _jumpLogic.TryJump(_rigidbody, _moveIntent.MoveDirectionWorld, isGrounded);
-        
-        _rotation.RotateTowardsMotion(transform, _rigidbody, _moveIntent.MoveDirectionWorld, _angularSpeed);
-    }
-
-    private void FixedUpdate()
-    {
-        _rigidbodyGuard.Sanitize(_rigidbody, transform);
-        
-        if (_pushState.HasPendingVelocity)
-        {
-            _rigidbody.velocity = _pushState.ConsumePendingVelocity();
-            
-            return;
-        }
-        
-        _pushState.Tick(Time.fixedDeltaTime);
-        
-        if (_pushState.IsSuspended)
-            return;
-
-        bool isGrounded = _jumpLogic.IsGrounded(transform, _jumpDistance, _groundMask);
-
-        if (_moveIntent.MoveDirectionWorld.sqrMagnitude > 0.0001f)
-            _botLocomotionHandler.HandleMovement(_rigidbody, _moveIntent.MoveDirectionWorld, isGrounded, _speed, _acceleration);
-
-        _animationHandler.UpdateAnimator(_rigidbody);
-    }
-
-    public void SuspendControl(float duration)
-    {
-        _pushState.Suspend(duration);
-    }
-    
     public void SetInput(IInput input)
     {
-        if (_input != null)
-            _input.Jumped -= OnJumped;
+        if (_subscribedInput != null)
+            _subscribedInput.Jumped -= RequestJump;
 
-        _input = input;
+        _subscribedInput = input;
 
-        if (_input != null)
-            _input.Jumped += OnJumped;
+        if (_subscribedInput != null)
+            _subscribedInput.Jumped += RequestJump;
+    }
+
+    public bool FixedStepMove(LayerMask ground)
+    {
+        if (_push.HasPendingVelocity)
+        {
+            rigidbody.velocity = _push.ConsumePendingVelocity();
+            
+            return true;
+        }
+
+        _push.Tick(Time.fixedDeltaTime);
+
+        if (_push.IsSuspended)
+            return false;
+
+        bool grounded = jump.IsGrounded(rigidbody.transform, jumpDistance, ground);
+
+        if (_intent.MoveDirectionWorld.sqrMagnitude > 1e-4f)
+            locomotion.HandleMovement(rigidbody, _intent.MoveDirectionWorld, grounded, speed, accel);
+        
+        animations.UpdateAnimator(rigidbody);
+        
+        return true;
     }
     
-    public void ApplyPush(Vector3 worldVelocity, float pushDuration)
+    public void UpdateInputAndFacing(IInput input, FacingRotator rotator, Transform objectTransform, float angularSpeed, LayerMask ground)
     {
-        _pushState.ApplyPendingVelocity(worldVelocity);
-        _pushState.Suspend(pushDuration);
+        _intent.UpdateFromInput(input);
+
+        if (_push.IsSuspended)
+            return;
+
+        bool grounded = jump.IsGrounded(objectTransform, jumpDistance, ground);
+        
+        if (_intent.ConsumeJumpRequest())
+            jump.TryJump(rigidbody, _intent.MoveDirectionWorld, grounded);
+
+        rotator.RotateTowardsMotion(objectTransform, rigidbody, _intent.MoveDirectionWorld, angularSpeed);
     }
-    
-    private void OnJumped()
+
+    public void ApplyPush(Vector3 velocity, float duration)
     {
-        _moveIntent.RequestJump();
+        _push.ApplyPendingVelocity(velocity);
+        _push.Suspend(duration);
     }
+
+    private void RequestJump() => _intent.RequestJump();
 }

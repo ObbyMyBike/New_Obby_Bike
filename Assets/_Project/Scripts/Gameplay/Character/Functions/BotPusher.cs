@@ -60,51 +60,84 @@ public class BotPusher
     {
         side = PushSide.Right;
         botTransform = null;
-        
+
         Vector3 playerPosition = playerTransform.position;
         int count = Physics.OverlapSphereNonAlloc(playerPosition, pushRadius, _hitsBuffer, _mask, QueryTriggerInteraction.Collide);
-        
-        if (count == 0)
-            return false;
+        if (count == 0) return false;
 
         Collider nearest = null;
-        BotDriver botDriver = null;
+        BotController controller = null;
         float bestSqr = float.MaxValue;
 
         for (int i = 0; i < count; i++)
         {
-            Collider collider = _hitsBuffer[i];
-            
-            if (collider == null)
-                continue;
-            
-            if (!collider.TryGetComponent(out BotDriver bot))
-                continue;
+            var c = _hitsBuffer[i];
+            if (c == null) continue;
+            if (!c.TryGetComponent(out BotController bot)) continue;
 
-            float sqr = (collider.transform.position - playerPosition).sqrMagnitude;
-            
-            if (sqr < bestSqr)
-            {
-                bestSqr = sqr;
-                nearest = collider;
-                botDriver = bot;
-            }
+            float sqr = (c.transform.position - playerPosition).sqrMagnitude;
+            if (sqr < bestSqr) { bestSqr = sqr; nearest = c; controller = bot; }
         }
-       
-        if (botDriver == null)
-            return false;
 
-        Vector3 toBot = nearest.transform.position - playerPosition;
-        toBot.y = 0f;
-        
-        Vector3 direction = toBot.sqrMagnitude > 0.0001f ? toBot.normalized : Vector3.zero;
-        float signed = Vector3.SignedAngle(playerTransform.forward, direction, Vector3.up);
-        
+        if (controller == null) return false;
+
+        Vector3 toBot = nearest.transform.position - playerPosition; toBot.y = 0f;
+        Vector3 dir = toBot.sqrMagnitude > 0.0001f ? toBot.normalized : Vector3.zero;
+
+        float signed = Vector3.SignedAngle(playerTransform.forward, dir, Vector3.up);
         side = signed < 0f ? PushSide.Left : PushSide.Right;
 
-        botDriver.ApplyPush(direction * pushForce, pushDuration);
-        botTransform = botDriver.transform;
-        
+        controller.ApplyPush(dir * pushForce, pushDuration);
+        botTransform = controller.transform;
         return true;
+        
+        // side = PushSide.Right;
+        // botTransform = null;
+        //
+        // Vector3 playerPosition = playerTransform.position;
+        // int count = Physics.OverlapSphereNonAlloc(playerPosition, pushRadius, _hitsBuffer, _mask, QueryTriggerInteraction.Collide);
+        //
+        // if (count == 0)
+        //     return false;
+        //
+        // Collider nearest = null;
+        // BotDriver botDriver = null;
+        // float bestSqr = float.MaxValue;
+        //
+        // for (int i = 0; i < count; i++)
+        // {
+        //     Collider collider = _hitsBuffer[i];
+        //     
+        //     if (collider == null)
+        //         continue;
+        //     
+        //     if (!collider.TryGetComponent(out BotDriver bot))
+        //         continue;
+        //
+        //     float sqr = (collider.transform.position - playerPosition).sqrMagnitude;
+        //     
+        //     if (sqr < bestSqr)
+        //     {
+        //         bestSqr = sqr;
+        //         nearest = collider;
+        //         botDriver = bot;
+        //     }
+        // }
+        //
+        // if (botDriver == null)
+        //     return false;
+        //
+        // Vector3 toBot = nearest.transform.position - playerPosition;
+        // toBot.y = 0f;
+        //
+        // Vector3 direction = toBot.sqrMagnitude > 0.0001f ? toBot.normalized : Vector3.zero;
+        // float signed = Vector3.SignedAngle(playerTransform.forward, direction, Vector3.up);
+        //
+        // side = signed < 0f ? PushSide.Left : PushSide.Right;
+        //
+        // botDriver.ApplyPush(direction * pushForce, pushDuration);
+        // botTransform = botDriver.transform;
+        //
+        // return true;
     }
 }

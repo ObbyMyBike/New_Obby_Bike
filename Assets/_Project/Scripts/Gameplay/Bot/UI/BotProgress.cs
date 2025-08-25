@@ -1,57 +1,36 @@
 using UnityEngine;
-using System;
 
-public class BotProgress : MonoBehaviour
+public class BotProgress
 {
-    public event Action<float> ProgressUpdated;
+    private readonly Transform botTransform;
+    private readonly ProgressBarView barView;
+    private readonly RacePath path;
+    private readonly Vector3 finishPosition;
+    private readonly float totalDistance;
 
-    private RacePath _path;
-    private Vector3 _startPosition;
-    private Vector3 _finishPosition;
-    private float _totalDistance;
-    private bool _usePath;
-
-    public void Initialize(Vector3 startPosition, Vector3 finishPosition)
+    public BotProgress(Transform botTransform, ProgressBarView barView, RacePath path, Vector3 start, Vector3 finishPosition)
     {
-        _path = null;
-        _usePath = false;
+        this.botTransform = botTransform;
+        this.barView = barView;
+        this.path = path;
+        this.finishPosition = finishPosition;
+        totalDistance = Vector3.Distance(start, finishPosition);
         
-        _startPosition = startPosition;
-        _finishPosition = finishPosition;
-        _totalDistance = Vector3.Distance(startPosition, finishPosition);
-        
-        UpdateProgress();
+        barView?.InitializeBot(botTransform.gameObject);
     }
 
-    public void InitializePath(RacePath path)
+    public void Tick()
     {
-        _path = path;
-        _usePath = _path != null && _path.IsValid;
-        
-        UpdateProgress();
-    }
-    
-    public void UpdateProgressFromPosition(Vector3 currentPosition)
-    {
-        float progress = 0f;
+        if (barView == null || botTransform == null)
+            return;
 
-        if (_usePath && _path != null && _path.IsValid)
-        {
-            progress = _path.ComputeProgress(currentPosition);
-        }
-        else
-        {
-            float currentDistance = Vector3.Distance(currentPosition, _finishPosition);
-            
-            progress = _totalDistance > 0f ? (1f - currentDistance / _totalDistance) : 0f;
-            progress = Mathf.Clamp01(progress);
-        }
+        float pathValue = 0f;
         
-        ProgressUpdated?.Invoke(progress);
-    }
-
-    private void UpdateProgress()
-    {
-        UpdateProgressFromPosition(transform.position);
+        if (path != null && path.IsValid)
+            pathValue = path.ComputeProgress(botTransform.position);
+        else if (totalDistance > 1e-4f)
+            pathValue = Mathf.Clamp01(1f - Vector3.Distance(botTransform.position, finishPosition) / totalDistance);
+        
+        barView.UpdateBotProgress(botTransform.gameObject, pathValue);
     }
 }

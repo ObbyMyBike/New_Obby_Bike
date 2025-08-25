@@ -4,29 +4,34 @@ using UnityEngine;
 
 public class ObjectPool<T> where T : Component
 {
-    private readonly T _prefab;
-    private readonly Queue<T> _queue = new Queue<T>();
-    private readonly Transform _parent;
-    private readonly Func<T> _factory;
-
+    private readonly T prefab;
+    private readonly Queue<T> queue = new Queue<T>();
+    private readonly Transform parent;
+    private readonly Func<T> factory;
+    private readonly bool useFactory;
+    
     public ObjectPool(T prefab, int initialSize = 0, Transform parent = null, Func<T> factory = null)
     {
-        _prefab = prefab;
-        _parent = parent != null ? parent : PoolContainer.Root;
-        _factory = factory;
+        this.prefab = prefab;
+        this.parent = parent != null ? parent : PoolContainer.Root;
+        this.factory = factory;
+        this.useFactory = factory != null;
         
         for (int i = 0; i < initialSize; i++)
-        {
-            var instance = CreateInstance(active: false);
-            _queue.Enqueue(instance);
-        }
+            this.queue.Enqueue(CreateInstance(false));
     }
     
     public T Get()
     {
-        T instance = (_queue.Count > 0) ? _queue.Dequeue() : CreateInstance(active: false);
+        T instance = null;
         
-        instance.transform.SetParent(_parent, worldPositionStays: true);
+        while (queue.Count > 0 && !instance)
+            instance = queue.Dequeue();
+
+        if (!instance)
+            instance = CreateInstance(false);
+
+        instance.transform.SetParent(parent, true);
         instance.gameObject.SetActive(true);
         
         return instance;
@@ -34,16 +39,23 @@ public class ObjectPool<T> where T : Component
     
     public void Release(T instance)
     {
+        if (!instance)
+            return;
+        
         instance.gameObject.SetActive(false);
-        instance.transform.SetParent(_parent, worldPositionStays: true);
-        _queue.Enqueue(instance);
+        instance.transform.SetParent(parent, true);
+        queue.Enqueue(instance);
     }
     
     private T CreateInstance(bool active)
     {
-        T instance = _factory != null ? _factory() : GameObject.Instantiate(_prefab, _parent);
+        T instance;
+        if (useFactory)
+            instance = factory();
+        else
+            instance = GameObject.Instantiate(prefab, parent);
 
-        instance.transform.SetParent(_parent, worldPositionStays: true);
+        instance.transform.SetParent(parent, worldPositionStays: true);
         instance.gameObject.SetActive(active);
         
         return instance;

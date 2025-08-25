@@ -35,18 +35,17 @@ public class BotSpawn : MonoBehaviour
     
     [Header("Progress Bar settings")]
     [SerializeField] private ProgressBarView _progressBarView;
-    
+   
     private OriginsBuilder _originsBuilder;
     private CheckingAccessPlace _clearance;
     private LanePicker _lanePicker;
     private BotFactory _botFactory;
-    private ProgressBotTracking _progress;
     private SpawnRandom _spawnRandom;
     private RacePath _racePath;
-    
+
     private List<SpawnOrigin> _origins;
-    private ObjectPool<BotDriver> _botPool;
-    
+    private ObjectPool<BotController> _botPool;
+
     [Inject] private NameAssigner _nameAssigner;
     [Inject] private DiContainer _container;
 
@@ -54,47 +53,40 @@ public class BotSpawn : MonoBehaviour
     {
         if (_botPrefab == null || _startPoint == null || _finPoint == null || _progressBarView == null)
             return;
-        
+
         _originsBuilder = new OriginsBuilder(_spawnBack);
         _clearance = new CheckingAccessPlace(_occupancyMask, _spawnCheckRadius);
         _lanePicker = new LanePicker(_laneSpacing, _laneSpread);
-        _progress = new ProgressBotTracking(_progressBarView, _startPoint, _finPoint);
         _origins = _originsBuilder.Build(_startPoint, _extraSpawnCheckpoints);
-        
+
         if (_origins.Count == 0)
             return;
 
         _racePath = new RacePath(_allCheckpoints);
-
-        BotDriver driverOnPrefab = _botPrefab.GetComponentInChildren<BotDriver>(true);
-        _botPool = new ObjectPool<BotDriver>(driverOnPrefab, _botCount, PoolContainer.Root, factory: () =>
+        
+        BotController ctrlOnPrefab = _botPrefab.GetComponentInChildren<BotController>(true);
+        _botPool = new ObjectPool<BotController>(ctrlOnPrefab, _botCount, PoolContainer.Root, factory: () =>
         {
             GameObject botObject = _container.InstantiatePrefab(_botPrefab, PoolContainer.Root);
             
-            return botObject.GetComponentInChildren<BotDriver>(true);
+            return botObject.GetComponentInChildren<BotController>(true);
         });
 
         _botFactory = new BotFactory(_container, _nameAssigner, _botPool, _botPresets, _trailChance);
+
         _spawnRandom = new SpawnRandom(MAX_ATTEMPTS, _retryInterval, _leaveDistance, _origins, _lanePicker, _clearance,
-            _botFactory, _progress, _racePath, this);
-        
+            _botFactory, _racePath, _progressBarView, this);
+
         if (_sequentialSpawn)
             StartCoroutine(SpawnSequential(_botCount));
         else
             StartCoroutine(SpawnInitialRandom());
     }
 
-    private void Update()
-    {
-        _progress.Tick();
-    }
-
-    public void DespawnAndRespawn(BotDriver bot)
+    public void DespawnAndRespawn(BotController bot)
     {
         if (bot == null)
             return;
-
-        _progress.Forget(bot.gameObject);
 
         if (bot.TryGetComponent(out Rigidbody botRigidbody))
         {
@@ -103,7 +95,6 @@ public class BotSpawn : MonoBehaviour
         }
 
         _botPool.Release(bot);
-        
         StartCoroutine(_spawnRandom.SpawnOne());
     }
 
@@ -116,10 +107,11 @@ public class BotSpawn : MonoBehaviour
     private IEnumerator SpawnSequential(int count)
     {
         yield return new WaitForSeconds(_initialSpawnDelay);
-
+        
         for (int i = 0; i < count; i++)
         {
             yield return StartCoroutine(_spawnRandom.SpawnOne());
+            
             yield return new WaitForSeconds(_spawnInterval);
         }
     }

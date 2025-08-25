@@ -17,11 +17,14 @@ public class DeathEffect
     public void PlayDieEffect(Vector3 position)
     {
         ParticleSystem effect = _pool.Get();
-        effect.transform.SetPositionAndRotation(position, Quaternion.identity);
-
+        
         var main = effect.main;
         main.useUnscaledTime = true;
+        main.stopAction = ParticleSystemStopAction.None;
         
+        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        
+        effect.transform.SetPositionAndRotation(position, Quaternion.identity);
         effect.Play();
 
         float lifetime = main.duration + main.startLifetime.constantMax;
@@ -33,6 +36,10 @@ public class DeathEffect
     {
         yield return new WaitForSecondsRealtime(delay);
         
+        if (effect == null)
+            yield break;
+        
+        effect.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         _pool.Release(effect);
     }
 }

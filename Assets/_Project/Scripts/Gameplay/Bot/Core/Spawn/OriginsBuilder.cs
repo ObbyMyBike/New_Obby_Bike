@@ -3,9 +3,9 @@ using UnityEngine;
 
 public class OriginsBuilder
 {
-    private readonly float spawnBack;
+    private readonly float spawnBackDistance;
 
-    public OriginsBuilder(float spawnBack) => this.spawnBack = Mathf.Max(0f, spawnBack);
+    public OriginsBuilder(float spawnBackDistance) => this.spawnBackDistance = Mathf.Max(0f, spawnBackDistance);
 
     public List<SpawnOrigin> Build(Waypoint startPoint, CheckPoints[] extra)
     {
@@ -27,7 +27,7 @@ public class OriginsBuilder
         
         return new SpawnOrigin
         {
-            Position = start.transform.position - forward * spawnBack,
+            Position = start.transform.position - forward * spawnBackDistance,
             Rotation = Quaternion.LookRotation(forward, Vector3.up),
             StartWaypoint = start,
             Checkpoint = null,
@@ -47,7 +47,7 @@ public class OriginsBuilder
 
         origin = new SpawnOrigin
         {
-            Position = checkPoints.transform.position - forward * spawnBack,
+            Position = checkPoints.transform.position - forward * spawnBackDistance,
             Rotation = Quaternion.LookRotation(forward, Vector3.up),
             StartWaypoint = waypoint,
             Checkpoint = checkPoints,

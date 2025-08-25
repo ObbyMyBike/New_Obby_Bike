@@ -20,10 +20,11 @@ public class MarkerController
 
     public void SetInstant(float normalizedProgress)
     {
-        Vector2 markerPosition = markerRect.anchoredPosition;
+        float x = layout.EvaluateX(normalizedProgress);
         
-        markerPosition.x = layout.EvaluateX(normalizedProgress);
-        markerRect.anchoredPosition = markerPosition;
+        Vector2 position = markerRect.anchoredPosition;
+        position.x = x;
+        markerRect.anchoredPosition = position;
     }
 
     public void AnimateTo(float normalizedProgress)

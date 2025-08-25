@@ -7,11 +7,11 @@ public class GateCheck
 
     public float GetStopRadius(WaypointGate gate) => (gate != null) ? Mathf.Max(0.05f, gate.StopRadius) : 0f;
 
-    public float GetCollectRadius(Waypoint wp, WaypointGate gate)
+    public float GetCollectRadius(Waypoint waypoint, WaypointGate gate)
     {
         float stop = GetStopRadius(gate);
 
-        return (gate != null) ? Mathf.Max(wp.ActivationRadius, stop) : wp.ActivationRadius;
+        return (gate != null) ? Mathf.Max(waypoint.ActivationRadius, stop) : waypoint.ActivationRadius;
     }
 
     public bool ReadyToPass(WaypointGate gate, Waypoint current, Waypoint projectedNext, bool spawnGrace)

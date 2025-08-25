@@ -149,7 +149,7 @@ public class TriggerZoneForwarder : MonoBehaviour
 
         if (_reactToBots)
         {
-            var bot = other.GetComponentInParent<BotDriver>();
+            BotController bot = other.GetComponentInParent<BotController>();
             
             if (bot != null)
             {

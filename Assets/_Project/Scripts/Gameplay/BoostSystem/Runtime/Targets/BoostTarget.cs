@@ -114,7 +114,7 @@ public class BoostTarget : MonoBehaviour
     
     private IEnumerator FlightRoutine(float flightTime)
     {
-        BotDriver botDriver = GetComponentInParent<BotDriver>();
+        BotController botDriver = GetComponentInParent<BotController>();
         
         if (botDriver != null)
             botDriver.SuspendControl(flightTime);

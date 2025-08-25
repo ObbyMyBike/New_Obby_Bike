@@ -266,9 +266,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _slider: {fileID: 4407986560187938745}
   _percentText: {fileID: 6531096764436885197}
-  _npcMarkerPrefab: {fileID: 0}
+  _botMarkerPrefab: {fileID: 0}
+  _playerMarkerPrefab: {fileID: 0}
   _progressBarRect: {fileID: 0}
-  _paddingX: 10
+  _horizontalPaddingPixels: 10
+  _animationDurationSeconds: 0.5
+  _playerMarkerColor: {r: 1, g: 0.55, b: 0.1, a: 1}
+  _forbiddenHueRangeDeg: {x: 30, y: 60}
+  _botSaturationRange: {x: 0.5, y: 1}
+  _botValueRange: {x: 0.7, y: 1}
 --- !u!1 &2651997094684799958
 GameObject:
   m_ObjectHideFlags: 0
@@ -1517,23 +1523,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 94186211542482538, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: InitialModule.maxNumParticles
-      value: 10
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 94186211904926524, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737273117095031, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737273989625697, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737274113074930, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_LocalScale.x
@@ -1589,11 +1583,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074935, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_Name
-      value: Area_magic_multicolor (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737274401868928, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
+      value: Area_magic_multicolor
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1613,6 +1603,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1337072134544471453}
     m_Modifications:
+    - target: {fileID: 601428962602197489, guid: 662cbec2a31b60641a3c3c12db0696d5, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 601428962602197489, guid: 662cbec2a31b60641a3c3c12db0696d5, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 768311989293413418, guid: 662cbec2a31b60641a3c3c12db0696d5, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.2
