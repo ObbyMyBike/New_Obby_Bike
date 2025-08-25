@@ -78,10 +78,6 @@ public class CheckPoints : MonoBehaviour
                 Reached?.Invoke(this);
             }
         }
-        else if (collision.TryGetComponent(out BotRespawn botRespawner))
-        {
-            botRespawner.SetCheckpoint(this);
-        }
     }
     
     private void PlayEffects()

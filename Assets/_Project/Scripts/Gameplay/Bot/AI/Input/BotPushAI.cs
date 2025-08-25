@@ -1,60 +1,58 @@
 using UnityEngine;
-using Zenject;
 
-public class BotPushAI : MonoBehaviour
+public class BotPushAI
 {
-    [Header("Push Settings")]
-    [SerializeField, Min(0f)] private float _pushRadius = 2f;
-    [SerializeField, Min(0f)] private float _pushForce = 10f;
-    [SerializeField, Min(0f)] private float _pushDuration = 1f;
-    [SerializeField, Min(0f)] private float _cooldown = 1.2f;
-    [SerializeField, Range(0f, 1f)] private float _chancePerAttempt = 0.2f;
+    private readonly Transform bot;
+    private readonly PlayerCharacterRoot player;
+    private readonly Rigidbody botRigidbody;
 
-    private Transform _botTransform;
-    private BotDriver _botDriver;
-    private PlayerCharacterRoot _player;
+    private readonly float radius;
+    private readonly float force;
+    private readonly float duration;
+    private readonly float cooldown;
+    private readonly float chance;
+    
     private float _nextTime;
 
-    [Inject]
-    private void Construct(Player player)
+    public BotPushAI(Transform bot, PlayerCharacterRoot player, Rigidbody botRigidbody, float radius, float force, float duration, float cooldown, float chance)
     {
-        _player = player != null ? player.PlayerCharacterRoot : null;
-    }
-
-    private void Awake()
-    {
-        _botTransform = transform;
-        _botDriver = GetComponentInChildren<BotDriver>();
+        this.bot = bot;
+        this.player = player;
+        this.botRigidbody = botRigidbody;
+        this.radius = radius;
+        this.force = force;
+        this.duration = duration;
+        this.cooldown = cooldown;
+        this.chance = chance;
+        
         _nextTime = Time.time + Random.Range(0.2f, 0.6f);
     }
 
-    private void Update()
+    public void Tick(float now)
     {
-        if (_player == null || _botDriver == null)
+        if (player == null)
             return;
-
-        if (Time.time < _nextTime)
-            return;
-
-        _nextTime = Time.time + _cooldown;
-
-        Vector3 botPosition = _botTransform.position;
-        Vector3 playerPosition = _player.transform.position;
-        Vector3 positionToPlayer = playerPosition - botPosition;
-        positionToPlayer.y = 0f;
-
-        if (positionToPlayer.sqrMagnitude > _pushRadius * _pushRadius)
-            return;
-
-        if (Random.value > _chancePerAttempt)
-            return;
-
-        if (positionToPlayer.sqrMagnitude < 1e-6f)
-            return;
-
-        Vector3 direction = positionToPlayer.normalized;
         
-        _player.TryApplyPush(direction * _pushForce, _pushDuration);
-        _botDriver.ApplyPush(-direction * _pushForce, _pushDuration);
+        if (now < _nextTime)
+            return;
+
+        _nextTime = now + cooldown;
+
+        Vector3 distance = player.transform.position - bot.position; distance.y = 0f;
+        
+        if (distance.sqrMagnitude > radius * radius)
+            return;
+        
+        if (distance.sqrMagnitude < 1e-6f)
+            return;
+        
+        if (Random.value > chance)
+            return;
+
+        Vector3 direction = distance.normalized;
+
+        player.TryApplyPush(direction * force, duration);
+        
+        botRigidbody.velocity += -direction * force * 0.1f;
     }
 }

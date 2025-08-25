@@ -31,14 +31,15 @@ public class BotInputAI : IInput
     private Vector3 _steerDirection;
     
     private bool _isWaitingAtGate;
-    private bool _isBypassStartGate = true; 
+    private bool _isBypassStartGate; 
+    
 
     public BotInputAI(Transform botTransform, Waypoint start, SmartBotParams settings)
     {
         bot = botTransform;
         this.settings = settings;
         firstWaypoint = start;
-        _isBypassStartGate = true; 
+        _isBypassStartGate = true;
         
         lanesWander = new LaneWander(settings);
         avoidance = new AvoidanceField(settings, nearbyShared);
@@ -62,7 +63,7 @@ public class BotInputAI : IInput
             
             return;
         }
-
+        
         lanesWander.Tick();
 
         Vector3 position = bot.position;
@@ -81,9 +82,9 @@ public class BotInputAI : IInput
         
         if (jumpAssist.UpdateHold(gate, distance, stopRadius, toTarget, ref _steerDirection, baseSpeedMul, out Vector2 holdInput))
         {
-            pathProgress.Update(target, true);
-            
             InputDirection = holdInput;
+            
+            pathProgress.Update(target, true);
             
             return;
         }
@@ -96,7 +97,7 @@ public class BotInputAI : IInput
             {
                 bool isReadyNear = gates.ReadyToPass(gate, _current, projectedNext, spawnGrace);
 
-                if (!isReadyNear)
+                if (!isReadyNear && distance <= Mathf.Max(0.6f, stopRadius * 1.5f))
                 {
                     float creepStop = Mathf.Max(0.9f * stopRadius, stopRadius - 0.05f);
                     
@@ -221,6 +222,7 @@ public class BotInputAI : IInput
 
         float laneBlend = steering.ComputeLaneBlend(_current, distance);
         Vector3 desired = steering.ComposeDesired(bot, position, forwardDir, lookPoint, lanesWander.CurrentOffset, laneBlend, avoidance);
+        
         _steerDirection = steering.UpdateSteering(_steerDirection, desired);
         
         float turnMultiplier = speed.TurnMultiplier(_current, projectedNext, position);
@@ -230,6 +232,7 @@ public class BotInputAI : IInput
         jumpAssist.ApplyAssist(ref moveDirection);
         
         InputDirection = new Vector2(moveDirection.x, moveDirection.z);
+        
         bool stuck = pathProgress.Update(_current.transform.position, _isWaitingAtGate);
         
         if (stuck)

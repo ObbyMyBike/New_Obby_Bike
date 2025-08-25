@@ -11,44 +11,68 @@ public abstract class BaseObstacle : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out BotRespawn botRespawner))
+        if (other.GetComponentInParent<BotController>() is BotController bot)
         {
-            _deathEffect.PlayDieEffect(botRespawner.transform.position);
-            
-            BikeRiderDetacher botDetacher = botRespawner.GetComponent<BikeRiderDetacher>();
-            
-            if (botDetacher != null)
-                botDetacher.Detach(botRespawner.transform.forward);
-            
-            StartCoroutine(RespawnBotAfterKick(botRespawner, botDetacher));
-            
+            _deathEffect.PlayDieEffect(bot.transform.position);
+
+            if (bot.TryGetComponent(out BikeRiderDetacher detacher))
+                detacher.Detach(bot.transform.forward);
+
+            StartCoroutine(RespawnBotAfterKick(bot, detacher));
             return;
         }
-        
+
         if (!other.TryGetComponent(out PlayerCharacterRoot player))
             return;
-        
+
         _deathEffect.PlayDieEffect(player.transform.position);
-        
+
         if (other.TryGetComponent(out BoostTarget boostTarget))
             boostTarget.BoostArc(Vector3.zero);
-        
-        BikeRiderDetacher playerDetacher = player.GetComponent<BikeRiderDetacher>();
-        
-        if (playerDetacher != null)
+
+        if (player.TryGetComponent(out BikeRiderDetacher playerDetacher))
             playerDetacher.Detach(player.transform.forward);
-        
+
         StartCoroutine(ShowRestartAfterKick(other.gameObject));
+        
+        // if (other.TryGetComponent(out BotRespawn botRespawner))
+        // {
+        //     _deathEffect.PlayDieEffect(botRespawner.transform.position);
+        //     
+        //     BikeRiderDetacher botDetacher = botRespawner.GetComponent<BikeRiderDetacher>();
+        //     
+        //     if (botDetacher != null)
+        //         botDetacher.Detach(botRespawner.transform.forward);
+        //     
+        //     StartCoroutine(RespawnBotAfterKick(botRespawner, botDetacher));
+        //     
+        //     return;
+        // }
+        //
+        // if (!other.TryGetComponent(out PlayerCharacterRoot player))
+        //     return;
+        //
+        // _deathEffect.PlayDieEffect(player.transform.position);
+        //
+        // if (other.TryGetComponent(out BoostTarget boostTarget))
+        //     boostTarget.BoostArc(Vector3.zero);
+        //
+        // BikeRiderDetacher playerDetacher = player.GetComponent<BikeRiderDetacher>();
+        //
+        // if (playerDetacher != null)
+        //     playerDetacher.Detach(player.transform.forward);
+        //
+        // StartCoroutine(ShowRestartAfterKick(other.gameObject));
     }
     
-    private IEnumerator RespawnBotAfterKick(BotRespawn botRespawn, BikeRiderDetacher detacher)
+    private IEnumerator RespawnBotAfterKick(BotController botRespawn, BikeRiderDetacher detacher)
     {
         yield return new WaitForSecondsRealtime(timeDelay);
         
         if (detacher != null)
             detacher.Reattach();
 
-        botRespawn.Respawn();
+        botRespawn.ForceRespawn();
     }
 
     

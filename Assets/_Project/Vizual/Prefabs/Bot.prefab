@@ -77,14 +77,10 @@ GameObject:
   - component: {fileID: 1986884122406587436}
   - component: {fileID: 6706288176354757253}
   - component: {fileID: 1474436369785332708}
-  - component: {fileID: -1821169970072675732}
   - component: {fileID: -5998920798707189923}
   - component: {fileID: 3070366597614611092}
-  - component: {fileID: 5004268192275466680}
-  - component: {fileID: 2040943023458983127}
   - component: {fileID: 5052557919234822619}
-  - component: {fileID: -6675414282721310697}
-  - component: {fileID: 833466939241253896}
+  - component: {fileID: 312502454339106114}
   m_Layer: 6
   m_Name: Bot
   m_TagString: NPC
@@ -180,18 +176,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-1821169970072675732
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7483731276464592100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9e4199effa47c3b49ba7d1db4d8b6617, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &-5998920798707189923
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -218,41 +202,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _rigidbody: {fileID: 1474436369785332708}
---- !u!114 &5004268192275466680
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7483731276464592100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6c2895a25ae9401ba148c88c72cecaea, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _animator: {fileID: 1986884122406587436}
-  _speed: 15
-  _acceleration: 100
-  _angularSpeed: 720
-  _jumpForce: 35
-  _jumpDistance: 2
---- !u!114 &2040943023458983127
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7483731276464592100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4795402576b4df6b4f7e7e011699e61, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _respawnCooldown: 0.5
-  _respawnRetryInterval: 0.2
-  _killBelowY: -40
-  _maxFreeFallSeconds: 2.5
-  _minFallSpeed: -7
 --- !u!114 &5052557919234822619
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -277,7 +226,7 @@ MonoBehaviour:
   _bikeCollider:
     WorldSize: {x: 1, y: 2, z: 3.4}
     WorldCenter: {x: 0, y: 1, z: -3.95}
---- !u!114 &-6675414282721310697
+--- !u!114 &312502454339106114
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -286,26 +235,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 7483731276464592100}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0f53855cfae4ba5b21e503daad882d3, type: 3}
+  m_Script: {fileID: 11500000, guid: c1cd52efcc8e40dbb7ca5cfd8e7a8bd8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _pushRadius: 3
-  _pushForce: 40
+  _animator: {fileID: 1986884122406587436}
+  _speed: 15
+  _acceleration: 100
+  _angularSpeed: 720
+  _jumpForce: 30
+  _jumpDistance: 1.2
+  _pushRadius: 2
+  _pushForce: 10
   _pushDuration: 1
-  _cooldown: 1
-  _chancePerAttempt: 0.2
---- !u!114 &833466939241253896
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7483731276464592100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 67fa26083ced47e18d259cf2050eb90d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
+  _pushCooldown: 1.2
+  _pushChance: 0.2
+  _respawnCooldown: 0.5
+  _respawnRetryInterval: 0.2
+  _killBelowY: -40
+  _maxFreeFallSeconds: 2.5
+  _minFallSpeed: -7
 --- !u!1 &8253628379536470287
 GameObject:
   m_ObjectHideFlags: 0

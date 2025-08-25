@@ -39,7 +39,7 @@ public class AgentClassifier
 
         if (reactBots)
         {
-            if (other.GetComponentInParent<BotDriver>() is BotDriver bot)
+            if (other.GetComponentInParent<BotController>() is BotController bot)
             {
                 root = bot;
                 

@@ -194,15 +194,6 @@ public class GameManager : MonoBehaviour
         }
     }
     
-    public void HideCursore()
-    {
-        if (!Application.isMobilePlatform)
-        {
-            Cursor.visible = false;
-            Cursor.lockState = CursorLockMode.Locked;
-        }
-    }
-    
     public void Finish()
     {
         float bestTime = PlayerPrefs.GetFloat(BEST_TIME, float.MaxValue);
@@ -234,14 +225,9 @@ public class GameManager : MonoBehaviour
     
     private void UpdateProgressBar()
     {
-        if (_progressBarView == null || _checkPoints.Length == 0)
+        if (_progressBarView == null || _racePath == null || !_racePath.IsValid || _player == null || _player.PlayerCharacterRoot == null)
             return;
         
-        int collected = PlayerSessionProgress.CollectedCheckpoints?.Count ?? 0;
-        collected = Mathf.Clamp(collected, 0, _checkPoints.Length);
-        
-        float percent = (float)collected / _checkPoints.Length * 100f;
-        
-        _progressBarView.AnimatePlayerProgress(percent);
+        _progressBarView.AnimatePlayerProgress(_racePath.ComputeProgress(_player.PlayerCharacterRoot.transform.position) * 100f);
     }
 }

@@ -6,10 +6,10 @@ public class BotFactory
     private readonly DiContainer container;
     private readonly SmartBotParams[] presets;
     private readonly NameAssigner nameAssigner;
-    private readonly ObjectPool<BotDriver> pool;
+    private readonly ObjectPool<BotController> pool;
     private readonly float trailChance;
 
-    public BotFactory(DiContainer container, NameAssigner nameAssigner, ObjectPool<BotDriver> pool, SmartBotParams[] presets, float trailChance)
+    public BotFactory(DiContainer container, NameAssigner nameAssigner, ObjectPool<BotController> pool, SmartBotParams[] presets, float trailChance)
     {
         this.container = container;
         this.nameAssigner = nameAssigner;
@@ -18,46 +18,36 @@ public class BotFactory
         this.trailChance = Mathf.Clamp01(trailChance);
     }
 
-    public BotDriver TrySpawnBot(Transform parent, Vector3 position, Quaternion rotation, SpawnOrigin origin)
+    public BotController TrySpawnBot(Transform parent, Vector3 position, Quaternion rotation, SpawnOrigin origin, RacePath racePath, ProgressBarView bar)
     {
-        BotDriver driver = pool.Get();
-        GameObject botInstance = driver.gameObject;
+        BotController controller = pool.Get();
+        GameObject botInstance = controller.gameObject;
 
         botInstance.transform.SetParent(parent, false);
         botInstance.transform.SetPositionAndRotation(position, rotation);
 
         nameAssigner?.AssignToBot(botInstance);
-
+        
         TrailRenderer trail = botInstance.GetComponentInChildren<TrailRenderer>();
+        bool trailEnabled = false;
         
         if (trail)
-            trail.enabled = (Random.value < trailChance);
-
-        SmartBotParams botParams = PickParamsVariant();
-        BotInputAI ai = new BotInputAI(botInstance.transform, origin.StartWaypoint, botParams);
-        driver.SetInput(ai);
-
-        BotAIController aiCtl = botInstance.GetComponent<BotAIController>() ?? botInstance.AddComponent<BotAIController>();
-        aiCtl.SetAI(ai);
-
-        if (botInstance.TryGetComponent(out BotRespawn respawn))
         {
-            respawn.Initialize(ai, origin.StartWaypoint);
-            
-            if (origin.Checkpoint != null)
-                respawn.SetCheckpoint(origin.Checkpoint);
+            trailEnabled = (Random.value < trailChance);
+            trail.enabled = trailEnabled;
         }
-
-        return driver;
+        
+        SmartBotParams botParams = PickParamsVariant();
+        controller.Initialize(botParams, origin.StartWaypoint, racePath, bar);
+        
+        return controller;
     }
-
-    public void Release(BotDriver driver) => pool.Release(driver);
 
     private SmartBotParams PickParamsVariant()
     {
         if (presets.Length == 0)
             return ScriptableObject.CreateInstance<SmartBotParams>();
-
+        
         return presets[Random.Range(0, presets.Length)];
     }
 }

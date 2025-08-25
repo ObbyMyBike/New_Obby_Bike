@@ -1,163 +1,120 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
-public class BotRespawn : MonoBehaviour
+public class BotRespawn
 {
-    [SerializeField, Min(0f)] private float _respawnCooldown = 0.5f;
-    [SerializeField, Min(0f)] private float _respawnRetryInterval = 0.2f;
+    private readonly Rigidbody botRigidbody;
+    private readonly float cooldown;
+    private readonly float retry;
+    private readonly float killBelowY;
+    private readonly float maxFreeFallSeconds;
+    private readonly float minFreeFallSeconds;
     
-    [Header("Fall failsafe")]
-    [SerializeField] private float _killBelowY = -40f;
-    [SerializeField] private float _maxFreeFallSeconds = 2.5f;
-    [SerializeField] private float _minFallSpeed = -7f;
+    private readonly Func<IEnumerator, Coroutine> start;
     
-    private BotInputAI _botInputAI;
-    private Waypoint _startPoint;
-    private Waypoint _lastCheckpointWaypoint;
     private CheckPoints _lastCheckpoint;
+    private Waypoint _lastWaypoint;
+    private Coroutine _retryRoutine;
+    private Vector3 _lastPosition;
     
-    private Rigidbody _rigidbody;
-    private Vector3 _lastCheckpointPosition;
-    
-    private float _fallSince = -1f;
-    private float _lastRespawnTime = -Mathf.Infinity;
-    
-    private bool _waitingForClear;
-    private bool _hasCheckpoint;
+    private float _fallSince;
 
-    private void Awake()
+    public BotRespawn(Rigidbody botRigidbody, float cooldown, float retry, float killBelowY, float maxFreeFallSeconds, float minFreeFallSeconds,
+        Waypoint start, Func<IEnumerator, Coroutine> startCoroutine, Action<Coroutine> stopCoroutine)
     {
-        _rigidbody = GetComponent<Rigidbody>() ?? GetComponentInParent<Rigidbody>();
+        this.botRigidbody = botRigidbody;
+        this.cooldown = cooldown;
+        this.retry = retry;
+        this.killBelowY = killBelowY;
+        this.maxFreeFallSeconds = maxFreeFallSeconds;
+        this.minFreeFallSeconds = minFreeFallSeconds;
+        
+        _lastWaypoint  = start;
+        _lastPosition = start != null ? start.transform.position : botRigidbody.position;
+
+        this.start = startCoroutine;
     }
 
-    private void Update()
+    public void SetCheckpoint(CheckPoints checkPoints)
     {
-        if (transform.position.y <= _killBelowY)
+        if (checkPoints == null)
+            return;
+        
+        _lastCheckpoint = checkPoints;
+        _lastPosition = checkPoints.transform.position;
+        
+        if (checkPoints.AssociatedWaypoint != null)
+            _lastWaypoint = checkPoints.AssociatedWaypoint;
+    }
+
+    public void TickFallKill(Vector3 pos, float vy)
+    {
+        if (pos.y <= killBelowY)
         {
-            Respawn();
-            
-            _fallSince = -1f;
+            Respawn(null);
             
             return;
         }
-        
-        if (_rigidbody != null)
-        {
-            if (_rigidbody.velocity.y <= _minFallSpeed)
-            {
-                if (_fallSince < 0f) _fallSince = Time.time;
 
-                if (Time.time - _fallSince >= _maxFreeFallSeconds)
-                {
-                    Respawn();
-                    
-                    _fallSince = -1f;
-                }
-            }
-            else
+        if (vy <= minFreeFallSeconds)
+        {
+            if (Time.time - _fallSince >= maxFreeFallSeconds)
             {
+                Respawn(null);
+                
                 _fallSince = -1f;
             }
         }
     }
-    
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.TryGetComponent(out CheckPoints checkpoint))
-            SetCheckpoint(checkpoint);
-    }
-    
-    public void Initialize(BotInputAI botInputAI, Waypoint startPoint)
-    {
-        _botInputAI = botInputAI;
-        _startPoint = startPoint;
-        _lastCheckpointWaypoint = startPoint;
-        _lastCheckpointPosition = startPoint.transform.position;
-        _hasCheckpoint = false;
-    }
 
-    public void SetCheckpoint(CheckPoints checkpoint)
+    public void Respawn(BotInputAI ai)
     {
-        if (checkpoint == null)
-            return;
-
-        _lastCheckpoint = checkpoint;
-        _lastCheckpointPosition = checkpoint.transform.position;
-        _hasCheckpoint = true;
-        
-        if (checkpoint.AssociatedWaypoint != null)
-            _lastCheckpointWaypoint = checkpoint.AssociatedWaypoint;
-    }
-    
-    public void Respawn()
-    {
-        if (_botInputAI == null)
-            return;
-
-        if (Time.time - _lastRespawnTime < _respawnCooldown)
-            return;
-
-        if (!_hasCheckpoint && _startPoint != null)
+        if (_lastCheckpoint != null && !_lastCheckpoint.CanSpawnOrRespawnHere())
         {
-            _lastCheckpointPosition = _startPoint.transform.position;
-            _lastCheckpointWaypoint = _startPoint;
-        }
-        
-        if (_lastCheckpoint is CheckPoints checkpoint)
-        {
-            if (!checkpoint.CanSpawnOrRespawnHere())
+            if (start == null)
             {
-                if (!_waitingForClear)
-                    StartCoroutine(RetryRespawnUntilClear(checkpoint));
+                DoRespawn(ai);
                 
                 return;
             }
-        }
-
-        _lastRespawnTime = Time.time;
-        
-        TryRespawn();
-    }
-    
-    private void TryRespawn()
-    {
-        transform.position = _lastCheckpointPosition;
-
-        if (_lastCheckpointWaypoint != null)
-        {
-            Vector3 plane = _lastCheckpointWaypoint.transform.position - transform.position;
-            plane.y = 0;
-
-            if (plane.sqrMagnitude > 0.001f)
-                transform.rotation = Quaternion.LookRotation(plane.normalized);
-        }
-
-        if (_rigidbody != null)
-        {
-            _rigidbody.velocity = Vector3.zero;
-            _rigidbody.angularVelocity = Vector3.zero;
-        }
-
-        _botInputAI.ResetToWaypoint(_lastCheckpointWaypoint);
-        _botInputAI.Tick();
-    }
-
-    private IEnumerator RetryRespawnUntilClear(CheckPoints checkpoint)
-    {
-        _waitingForClear = true;
-
-        while (true)
-        {
-            yield return new WaitForSeconds(_respawnRetryInterval);
             
-            if (checkpoint.CanSpawnOrRespawnHere())
-                break;
+            if (_retryRoutine == null)
+                _retryRoutine = start(RetryRespawn(ai, _lastCheckpoint));
+            
+            return;
+        }
+        
+        DoRespawn(ai);
+    }
+
+    private void DoRespawn(BotInputAI botAI)
+    {
+        botRigidbody.transform.position = _lastPosition;
+
+        if (_lastWaypoint != null)
+        {
+            Vector3 plane = _lastWaypoint.transform.position - botRigidbody.transform.position;
+            plane.y = 0f;
+            
+            if (plane.sqrMagnitude > 0.001f)
+                botRigidbody.transform.rotation = Quaternion.LookRotation(plane.normalized);
         }
 
-        _waitingForClear = false;
-        _lastRespawnTime = Time.time;
+        botRigidbody.velocity = Vector3.zero;
+        botRigidbody.angularVelocity = Vector3.zero;
+
+        botAI?.ResetToWaypoint(_lastWaypoint);
+        botAI?.Tick();
+    }
+
+    private IEnumerator RetryRespawn(BotInputAI botAI, CheckPoints checkPoints)
+    {
+        while (!checkPoints.CanSpawnOrRespawnHere())
+            yield return new WaitForSeconds(retry);
+
+        _retryRoutine = null;
         
-        TryRespawn();
+        DoRespawn(botAI);
     }
 }

@@ -37,6 +37,9 @@ public class WaypointChooser
             if (waypoint == null || waypoint == from)
                 continue;
 
+            bool pass = true;
+            float dot = 0f;
+            
             if (hasPreview)
             {
                 Vector3 toCandidate = (waypoint.transform.position - from.transform.position);
@@ -44,14 +47,15 @@ public class WaypointChooser
 
                 if (toCandidate.sqrMagnitude > 1e-6f)
                 {
-                    float dot = Vector3.Dot(toCandidate.normalized, previewDirection);
+                    dot = Vector3.Dot(toCandidate.normalized, previewDirection);
                     
                     if (dot > backDotThreshold)
                         continue;
                 }
             }
 
-            filtered.Add(waypoint);
+            if (pass)
+                filtered.Add(waypoint);
         }
 
         if (filtered.Count == 0)
@@ -74,21 +78,22 @@ public class WaypointChooser
             if (waypoint == null)
                 continue;
             
-            float random = Random.value;
+            float score = Random.value;
+            bool recent = recentWaypoints.Contains(waypoint);
 
-            if (recentWaypoints.Contains(waypoint))
-                random -= 0.3f;
+            if (recent)
+                score -= 0.3f;
             
             if (waypoint.RequiresJump)
-                random += Mathf.Lerp(0f, 0.25f, aggression);
+                score += Mathf.Lerp(0f, 0.25f, aggression);
             
             if (waypoint == _lastChosenNext)
-                random -= 0.2f;
+                score -= 0.2f;
 
-            if (random > bestScore)
+            if (score > bestScore)
             {
-                bestScore  = random;
-                bestIndex  = i;
+                bestScore = score;
+                bestIndex = i;
             }
         }
 

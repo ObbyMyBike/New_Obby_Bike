@@ -111,6 +111,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Obby_Parkour_MegaP_set4_10
       objectReference: {fileID: 0}
+    - target: {fileID: 5787007127912655005, guid: 5339baca22d03694d8306939fc9d88a6, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5787007127912655005, guid: 5339baca22d03694d8306939fc9d88a6, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -129,6 +137,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3667154153674324398}
     m_Modifications:
+    - target: {fileID: 197871872497953427, guid: 7b4e58066e3874e428cfff31f4bc0483, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 197871872497953427, guid: 7b4e58066e3874e428cfff31f4bc0483, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4592360864862724837, guid: 7b4e58066e3874e428cfff31f4bc0483, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -191,6 +207,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3667154153674324398}
     m_Modifications:
+    - target: {fileID: 3251327696055723480, guid: e98b77abf09927744a58bd2d74a0bb0f, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3251327696055723480, guid: e98b77abf09927744a58bd2d74a0bb0f, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5517671841337775991, guid: e98b77abf09927744a58bd2d74a0bb0f, type: 3}
       propertyPath: m_Name
       value: Obby_Parkour_MegaP_set4_09
@@ -253,6 +277,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3667154153674324398}
     m_Modifications:
+    - target: {fileID: 2940837745986556036, guid: a4f3e4a23a48e634a8a1f6deecde57d2, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2940837745986556036, guid: a4f3e4a23a48e634a8a1f6deecde57d2, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4247932002269631031, guid: a4f3e4a23a48e634a8a1f6deecde57d2, type: 3}
       propertyPath: m_Name
       value: Obby_Parkour_MegaP_set4_07
@@ -355,6 +387,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3321851347185217765, guid: d6dc926efb4878a4796eda7426d19bec, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3321851347185217765, guid: d6dc926efb4878a4796eda7426d19bec, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 3594819387972654460, guid: d6dc926efb4878a4796eda7426d19bec, type: 3}
       propertyPath: m_Name
       value: Obby_Parkour_MegaP_set4_08
@@ -377,6 +417,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 3667154153674324398}
     m_Modifications:
+    - target: {fileID: 2541954120246080226, guid: db96d490eb3cece46af881447c3d9629, type: 3}
+      propertyPath: m_CastShadows
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2541954120246080226, guid: db96d490eb3cece46af881447c3d9629, type: 3}
+      propertyPath: m_ReceiveShadows
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5550527733509069102, guid: db96d490eb3cece46af881447c3d9629, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0

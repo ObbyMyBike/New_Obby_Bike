@@ -8,7 +8,8 @@ public class RacePath
     private readonly float[] cumLen;
     private readonly int count;
     private readonly float totalLen;
-
+    
+    public Vector3 FinishPoint { get; private set; }
     public bool IsValid => points != null && points.Length >= 2;
     
     public RacePath(CheckPoints[] pointsArray)
@@ -46,6 +47,8 @@ public class RacePath
         points = list.ToArray();
         count = points.Length;
 
+        FinishPoint = points[count - 1];
+        
         cumLen = new float[count];
         float distance = 0f;
         
@@ -58,7 +61,7 @@ public class RacePath
         totalLen = distance;
     }
     
-    public float ComputeProgress(Vector3 pos)
+    public float ComputeProgress(Vector3 position)
     {
         if (!IsValid || totalLen <= 1e-4f)
             return 0f;
@@ -70,16 +73,16 @@ public class RacePath
         {
             Vector3 pointA = points[i - 1];
             Vector3 pointB = points[i];
-            Vector3 ab = pointB - pointA;
-            float abLen2 = ab.sqrMagnitude;
+            Vector3 distance = pointB - pointA;
+            float abLen2 = distance.sqrMagnitude;
             
             if (abLen2 < 1e-6f)
                 continue;
 
-            float clamp01 = Mathf.Clamp01(Vector3.Dot(pos - pointA, ab) / abLen2);
-            Vector3 proj = pointA + ab * clamp01;
+            float clamp01 = Mathf.Clamp01(Vector3.Dot(position - pointA, distance) / abLen2);
+            Vector3 proj = pointA + distance * clamp01;
 
-            float sqr = (pos - proj).sqrMagnitude;
+            float sqr = (position - proj).sqrMagnitude;
             
             if (sqr < bestSqr)
             {

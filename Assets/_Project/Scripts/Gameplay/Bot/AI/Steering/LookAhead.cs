@@ -32,9 +32,9 @@ public class LookAhead
 
         if (distance > 0.001f)
         {
-            float la = Mathf.Min(settings.LookAhead, distance);
+            float lookAhead = Mathf.Min(settings.LookAhead, distance);
             
-            lookPoint = botTransform.position + forwardDirection * la;
+            lookPoint = botTransform.position + forwardDirection * lookAhead;
         }
     }
 }

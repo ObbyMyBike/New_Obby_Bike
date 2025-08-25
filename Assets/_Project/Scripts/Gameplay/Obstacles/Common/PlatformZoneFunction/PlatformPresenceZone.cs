@@ -68,7 +68,7 @@ public class PlatformPresenceZone : MonoBehaviour
 
         if (_reactToBots)
         {
-            BotDriver bot = other.GetComponentInParent<BotDriver>();
+            BotController bot = other.GetComponentInParent<BotController>();
 
             if (bot != null)
             {

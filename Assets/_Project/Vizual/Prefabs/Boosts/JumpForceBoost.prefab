@@ -33,7 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 727331556894932295}
-  - {fileID: 6937300858406350814}
+  - {fileID: 8701809903029732411}
   - {fileID: 4745754547612107117}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -191,9 +191,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _slider: {fileID: 4407986560187938745}
   _percentText: {fileID: 6531096764436885197}
-  _npcMarkerPrefab: {fileID: 0}
+  _botMarkerPrefab: {fileID: 0}
+  _playerMarkerPrefab: {fileID: 0}
   _progressBarRect: {fileID: 0}
-  _paddingX: 10
+  _horizontalPaddingPixels: 10
+  _animationDurationSeconds: 0.5
+  _playerMarkerColor: {r: 1, g: 0.55, b: 0.1, a: 1}
+  _forbiddenHueRangeDeg: {x: 30, y: 60}
+  _botSaturationRange: {x: 0.5, y: 1}
+  _botValueRange: {x: 0.7, y: 1}
 --- !u!1 &2120095268219215034
 GameObject:
   m_ObjectHideFlags: 0
@@ -1355,7 +1361,7 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!1001 &1910602448366799146
+--- !u!1001 &146057670412460751
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -1363,26 +1369,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 1337072134544471453}
     m_Modifications:
-    - target: {fileID: 94186211542482538, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 94186211904926524, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737273117095031, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737273989625697, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737274113074930, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_LocalScale.x
       value: 0.3
@@ -1417,15 +1403,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: -5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -1437,21 +1423,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8846737274113074935, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
       propertyPath: m_Name
-      value: Area_magic_multicolor (1)
-      objectReference: {fileID: 0}
-    - target: {fileID: 8846737274401868928, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-      propertyPath: InitialModule.maxNumParticles
-      value: 10
+      value: Area_magic_multicolor
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
---- !u!4 &6937300858406350814 stripped
+--- !u!4 &8701809903029732411 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8846737274113074932, guid: 81a74a0aefeb7674ca32535d1a269b4a, type: 3}
-  m_PrefabInstance: {fileID: 1910602448366799146}
+  m_PrefabInstance: {fileID: 146057670412460751}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &5437490938439841095
 PrefabInstance:
