@@ -104,18 +104,7 @@ public class GameManager : MonoBehaviour
         _playerTracker?.Tick();
         
         if (Advertising.IsReclama)
-        {
             Advertising.IsReclama = false;
-            
-            _pause.gameObject.SetActive(true);
-            _pause.TryUsePause();
-            
-            if (!Application.isMobilePlatform)
-            {
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.Confined;
-            }
-        }
     }
     
     private void LateUpdate()

@@ -13,7 +13,7 @@ public class CheckPointEffect
     public IEnumerator Play()
     {
         _particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        _particleSystem.Play();
+        _particleSystem.Play(true);
 
         yield return new WaitWhile(() => _particleSystem.IsAlive(true));
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
@@ -7,7 +8,7 @@ public class CheckPoints : MonoBehaviour
 {
     public static event Action<CheckPoints> Reached;
 
-    [SerializeField] private int num;
+    [SerializeField] private int _number;
     [SerializeField] private Waypoint _associatedWaypoint;
     [SerializeField] private bool _isLevelEnd = false;
 
@@ -26,14 +27,17 @@ public class CheckPoints : MonoBehaviour
     [SerializeField] private float _occupancyCheckRadius = 1f;
     [SerializeField] private LayerMask _occupancyMask;
     
+    private readonly List<ParticleSystem> finishLoopEffect = new List<ParticleSystem>();
+    
     private FlagAnimation _flagAnimation;
     private CheckpointOccupancyChecker _checkpointOccupancyChecker;
     private ObjectPool<ParticleSystem> _effectPool;
 
     private bool _playerCollected;
+    private bool _finishLoopStarted;
     
     public Waypoint AssociatedWaypoint => _associatedWaypoint;
-    public int Number => num;
+    public int Number => _number;
     public bool IsLevelEnd => _isLevelEnd;
     
     private void Awake()
@@ -45,18 +49,8 @@ public class CheckPoints : MonoBehaviour
 
     private void Start()
     {
-        _playerCollected = PlayerSessionProgress.CollectedCheckpoints.Contains(num);
+        _playerCollected = PlayerSessionProgress.CollectedCheckpoints.Contains(_number);
     }
-
-    private void OnValidate()
-    {
-        if (_checkpointOccupancyChecker == null)
-            _checkpointOccupancyChecker = new CheckpointOccupancyChecker(_occupancyMask, _occupancyCheckRadius);
-        else
-            _checkpointOccupancyChecker.UpdateParams(_occupancyMask, _occupancyCheckRadius);
-    }
-    
-    public bool CanSpawnOrRespawnHere() => _checkpointOccupancyChecker.IsClear(transform.position);
     
     private void OnTriggerEnter(Collider collision)
     {
@@ -64,9 +58,9 @@ public class CheckPoints : MonoBehaviour
         {
             if (!_playerCollected)
             {
-                PlayerSessionProgress.CollectedCheckpoints.Add(num);
+                PlayerSessionProgress.CollectedCheckpoints.Add(_number);
                 PlayerSessionProgress.Point++;
-                PlayerSessionProgress.LastCheckpointNum = num;
+                PlayerSessionProgress.LastCheckpointNum = _number;
 
                 _playerCollected = true;
                 
@@ -77,6 +71,55 @@ public class CheckPoints : MonoBehaviour
                 Reached?.Invoke(this);
             }
         }
+    }
+    
+    private void OnValidate()
+    {
+        if (_checkpointOccupancyChecker == null)
+            _checkpointOccupancyChecker = new CheckpointOccupancyChecker(_occupancyMask, _occupancyCheckRadius);
+        else
+            _checkpointOccupancyChecker.UpdateParams(_occupancyMask, _occupancyCheckRadius);
+    }
+    
+    public bool CanSpawnOrRespawnHere() => _checkpointOccupancyChecker.IsClear(transform.position);
+    
+    public void StartFinishLoopEffect()
+    {
+        if (_finishLoopStarted || _effectPrefab == null)
+            return;
+        
+        if (_effectSpawnPoints != null && _effectSpawnPoints.Length > 0)
+        {
+            foreach (Transform point in _effectSpawnPoints)
+            {
+                if (point == null)
+                    continue;
+                
+                finishLoopEffect.Add(SpawnLoopEffectAt(point.position, point.rotation));
+            }
+        }
+        else
+        {
+            finishLoopEffect.Add(SpawnLoopEffectAt(transform.position, Quaternion.identity));
+        }
+
+        _finishLoopStarted = true;
+    }
+    
+    private ParticleSystem SpawnLoopEffectAt(Vector3 pos, Quaternion rot)
+    {
+        ParticleSystem effectInstance = Instantiate(_effectPrefab, pos, rot, _effectsContainer != null ? _effectsContainer : transform);
+        ParticleSystem[] allEffects = effectInstance.GetComponentsInChildren<ParticleSystem>(true);
+        
+        foreach (ParticleSystem effect in allEffects)
+        {
+            ParticleSystem.MainModule module = effect.main;
+            module.loop = true;
+        }
+        
+        effectInstance.Play(true);
+        
+        return effectInstance;
     }
     
     private void PlayEffects()
