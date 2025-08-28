@@ -60,6 +60,12 @@ public class GameplayInstaller : MonoInstaller
         BindInstance(_boostTimerUI);
         BindDeathEffect(_dieEffectPrefab, _effectsParent, _dieEffectPoolSize);
         BindInternetChecker(_internetCheckInterval);
+        
+        Container.BindInterfacesAndSelfTo<LevelDirector>().FromComponentInHierarchy().AsSingle().NonLazy();
+        
+        BindSelfFromHierarchy<RacePlaceView>();
+        BindSingleton<BotRegistry>();
+        Container.BindInterfacesAndSelfTo<RaceRanking>().AsSingle().NonLazy();
     }
 
     private void BindConstruct<T>(params object[] args) where T : class

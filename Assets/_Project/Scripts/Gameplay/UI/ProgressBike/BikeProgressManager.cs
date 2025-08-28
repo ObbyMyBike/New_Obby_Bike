@@ -5,7 +5,6 @@ using UnityEngine;
 public class BikeProgressManager
 {
     private const float MAX_PROGRESS_PERCENT = 100f;
-    private const float RESET_DELAY_SECONDS = 3f;
     
     public event Action<float, Sprite> ProgressUpdated;
     public event Action BikeUnlocked;

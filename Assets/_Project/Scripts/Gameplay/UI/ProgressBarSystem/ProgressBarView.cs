@@ -34,55 +34,24 @@ public class ProgressBarView : MonoBehaviour
 
     private RectTransform _barLayoutRect => _progressBarRect != null ? _progressBarRect : (_slider != null ? _slider.GetComponent<RectTransform>() : null);
     
+    private void Awake()
+    {
+        EnsureInitialized();
+    }
+    
     private void Start()
     {
-        if (_slider != null)
-        {
-            _slider.minValue = PROGRESS_MIN;
-            _slider.maxValue = PROGRESS_MAX;
-            _slider.value = PROGRESS_MIN;
-        }
-        
-        if (_percentText != null)
-            _percentText.text = "0%";
-        
-        RectTransform trackRect = _progressBarRect != null ? _progressBarRect : (_slider != null ? _slider.GetComponent<RectTransform>() : null);
-        
-        if (trackRect == null)
-            return;
-        
-        ForceBuildLayout(trackRect);
-
-        _barLayout = new HorizontalBarLayout(trackRect, _horizontalPaddingPixels);
-        _colorGenerator = new ColorGenerator(_forbiddenHueRangeDeg, _botSaturationRange, _botValueRange);
+        EnsureInitialized();
     }
-
-    public void InitializePlayer()
+    
+    public void UpdateCheckpointFill(float fraction01)
     {
-        if (_playerMarkerController != null)
-            return;
-
-        GameObject prefabInstance = _playerMarkerPrefab != null ? _playerMarkerPrefab : _botMarkerPrefab;
-        GameObject markerInstance = Instantiate(prefabInstance, _progressBarRect);
-
-        if (markerInstance.TryGetComponent(out RectTransform rect))
-        {
-            if (rect == null)
-            {
-                Destroy(markerInstance);
-
-                return;
-            }
-        }
-
-        if (markerInstance.TryGetComponent(out Image image))
-            image.color = _playerMarkerColor;
-
-        if (_barLayout != null)
-            ForceBuildLayout((_barLayoutRect ?? _progressBarRect));
+        float clamped = Mathf.Clamp01(fraction01);
         
-        _playerMarkerController = new MarkerController(rect, _barLayout, _animationDurationSeconds, this);
-        _playerMarkerController.SetInstant(0f);
+        if (_sliderAnimation != null)
+            StopCoroutine(_sliderAnimation);
+
+        _sliderAnimation = StartCoroutine(AnimateSliderTo(clamped));
     }
     
     public void UpdatePlayerProgress(float normalizedProgress)
@@ -92,36 +61,57 @@ public class ProgressBarView : MonoBehaviour
 
         _playerMarkerController.AnimateTo(Mathf.Clamp01(normalizedProgress));
     }
-
-    public void AnimatePlayerProgress(float newPercent)
+    
+    public void UpdateBotProgress(GameObject bot, float normalizedProgress)
     {
-        float clampedPercent = Mathf.Clamp(newPercent, 0f, PERCENT_MAX);
-        float targetSliderValue = clampedPercent / PERCENT_MAX;
+        if (bot == null)
+            return;
 
-        if (_sliderAnimation != null)
-            StopCoroutine(_sliderAnimation);
+        if (botMarkers.TryGetValue(bot, out MarkerController controller))
+            controller.AnimateTo(Mathf.Clamp01(normalizedProgress));
+    }
+    
+    public void InitializePlayer()
+    {
+        if (_playerMarkerController != null)
+            return;
 
-        _sliderAnimation = StartCoroutine(AnimateSliderTo(targetSliderValue));
+        GameObject prefabInstance = _playerMarkerPrefab != null ? _playerMarkerPrefab : _botMarkerPrefab;
+        GameObject markerInstance = Instantiate(prefabInstance, _progressBarRect);
+
+        markerInstance.TryGetComponent(out RectTransform rect);
+        
+        if (rect == null)
+        {
+            Destroy(markerInstance);
+            
+            return;
+        }
+
+        if (markerInstance.TryGetComponent(out Image image))
+            image.color = _playerMarkerColor;
+
+        ForceBuildLayout((_barLayoutRect ?? _progressBarRect));
+        
+        _playerMarkerController = new MarkerController(rect, _barLayout, _animationDurationSeconds, this);
+        _playerMarkerController.SetInstant(0f);
     }
 
     public void InitializeBot(GameObject bot)
     {
-        if (bot == null || botMarkers.ContainsKey(bot))
-            return;
+        EnsureInitialized();
         
-        if (botMarkers.ContainsKey(bot))
+        if (bot == null || botMarkers.ContainsKey(bot))
             return;
 
         GameObject markerObject = Instantiate(_botMarkerPrefab, _progressBarRect);
 
-        if (markerObject.TryGetComponent(out RectTransform rect))
+        markerObject.TryGetComponent(out RectTransform rect);
+        
+        if (rect == null)
         {
-            if (rect == null)
-            {
-                Destroy(markerObject);
-                
-                return;
-            }
+            Destroy(markerObject);
+            return;
         }
 
         if (markerObject.TryGetComponent(out Image image))
@@ -133,15 +123,31 @@ public class ProgressBarView : MonoBehaviour
         botMarkers.Add(bot, controller);
     }
 
-    public void UpdateBotProgress(GameObject bot, float normalizedProgress)
+    private void EnsureInitialized()
     {
-        if (bot == null)
+        if (_slider != null)
+        {
+            _slider.minValue = PROGRESS_MIN;
+            _slider.maxValue = PROGRESS_MAX;
+        }
+
+        if (_percentText != null)
+        {
+            float current = _slider != null ? _slider.value : 0f;
+            _percentText.text = $"{Mathf.RoundToInt(current * PERCENT_MAX)}%";
+        }
+
+        RectTransform trackRect = _progressBarRect != null ? _progressBarRect : (_slider != null ? _slider.GetComponent<RectTransform>() : null);
+        
+        if (trackRect == null)
             return;
 
-        if (botMarkers.TryGetValue(bot, out MarkerController controller))
-            controller.AnimateTo(Mathf.Clamp01(normalizedProgress));
+        ForceBuildLayout(trackRect);
+        
+        _barLayout ??= new HorizontalBarLayout(trackRect, _horizontalPaddingPixels);
+        _colorGenerator ??= new ColorGenerator(_forbiddenHueRangeDeg, _botSaturationRange, _botValueRange);
     }
-
+    
     private IEnumerator AnimateSliderTo(float targetValue)
     {
         float startValue = _slider.value;

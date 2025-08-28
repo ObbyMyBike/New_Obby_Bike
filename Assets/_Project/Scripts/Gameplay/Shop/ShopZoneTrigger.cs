@@ -9,6 +9,7 @@ public class ShopZoneTrigger : MonoBehaviour
     private void Awake()
     {
         _collider = GetComponent<Collider>();
+        _collider.isTrigger = true;
     }
 
     private void Reset()
@@ -19,14 +20,12 @@ public class ShopZoneTrigger : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out PlayerCharacterRoot player))
-            if (player!= null)
-                _shopPanel.Show();
+            _shopPanel?.Show();
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent(out PlayerCharacterRoot player))
-            if (player!= null)
-                _shopPanel.Hide();
+        if (other.TryGetComponent(out PlayerCharacterRoot player)) 
+            _shopPanel?.Hide();
     }
 }

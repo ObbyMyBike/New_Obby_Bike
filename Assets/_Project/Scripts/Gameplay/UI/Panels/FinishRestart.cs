@@ -8,6 +8,9 @@ public class FinishRestart : MonoBehaviour
     [SerializeField] private GameObject _finishPanel;
 
     private GameManager _gameManager;
+    
+    [Inject(Optional = true)] private CameraControl _cameraControl;
+    [Inject(Optional = true)] private Player _player;
 
     [Inject]
     public void Construct(GameManager gameManager)
@@ -31,6 +34,15 @@ public class FinishRestart : MonoBehaviour
     {
         if (_finishPanel != null)
             _finishPanel.SetActive(false);
+        
+        if (_cameraControl != null)
+            _cameraControl.StopAutoOrbit();
+        
+        if (!Application.isMobilePlatform)
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
+        }
         
         Time.timeScale = 1f;
         CameraControl.IsPause = false;
