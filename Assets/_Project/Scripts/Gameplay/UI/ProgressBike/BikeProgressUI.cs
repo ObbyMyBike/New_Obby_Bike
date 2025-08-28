@@ -16,6 +16,7 @@ public class BikeProgressUI : MonoBehaviour
     [SerializeField] private GameObject _progressPanel;
     [SerializeField] private Image _fillableProgressImage;
     [SerializeField] private Image _bikeBackgroundImage;
+    [SerializeField] private Image _rightClickHintImage;
     [SerializeField] private TMP_Text _progressText;
     [SerializeField] private TMP_Text _newBikeUnlockedText;
     [SerializeField] private Button _closeButton;
@@ -28,6 +29,8 @@ public class BikeProgressUI : MonoBehaviour
     
     [Inject] private IEnumerable<CheckPoints> _checkPoints; 
 
+    private bool IsDesktopLike => !Application.isMobilePlatform;
+    
     private void Awake()
     {
         _manager = new BikeProgressManager(_checkpointsPerStep, _progressStep, _bikeSkins, this);
@@ -38,6 +41,7 @@ public class BikeProgressUI : MonoBehaviour
 
         _progressPanel.SetActive(false);
         _newBikeUnlockedText?.gameObject.SetActive(false);
+        _rightClickHintImage?.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -58,6 +62,12 @@ public class BikeProgressUI : MonoBehaviour
         _manager.ProgressReseted -= OnProgressReseted;
         
         _closeButton.onClick.RemoveListener(HideProgressPanel);
+    }
+    
+    private void Update()
+    {
+        if (IsDesktopLike && _progressPanel.activeSelf && Input.GetMouseButtonDown(1))
+            HideProgressPanel();
     }
 
     private void UpdateProgressUI(float progress, Sprite uiSprite)
@@ -85,6 +95,7 @@ public class BikeProgressUI : MonoBehaviour
     private void ShowProgressPanel()
     {
         _progressPanel.SetActive(true);
+        _rightClickHintImage?.gameObject.SetActive(IsDesktopLike);
 
         CancelAutoHide();
 
