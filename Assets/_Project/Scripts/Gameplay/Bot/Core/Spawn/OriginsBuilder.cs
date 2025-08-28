@@ -76,7 +76,10 @@ public class OriginsBuilder
                     direction.y = 0f;
                     
                     if (direction.sqrMagnitude > 1e-4f)
-                        forward = direction; break;
+                    {
+                        forward = direction;
+                        break;
+                    }
                 }
             }
             

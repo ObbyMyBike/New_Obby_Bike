@@ -5,11 +5,10 @@ using UnityEngine;
 public class BotRespawn
 {
     private readonly Rigidbody botRigidbody;
-    private readonly float cooldown;
     private readonly float retry;
     private readonly float killBelowY;
     private readonly float maxFreeFallSeconds;
-    private readonly float minFreeFallSeconds;
+    private readonly float minFallSpeed;
     
     private readonly Func<IEnumerator, Coroutine> start;
     
@@ -18,17 +17,16 @@ public class BotRespawn
     private Coroutine _retryRoutine;
     private Vector3 _lastPosition;
     
-    private float _fallSince;
+    private float _fallSince = -1f;
 
-    public BotRespawn(Rigidbody botRigidbody, float cooldown, float retry, float killBelowY, float maxFreeFallSeconds, float minFreeFallSeconds,
+    public BotRespawn(Rigidbody botRigidbody, float retry, float killBelowY, float maxFreeFallSeconds, float minFallSpeed,
         Waypoint start, Func<IEnumerator, Coroutine> startCoroutine, Action<Coroutine> stopCoroutine)
     {
         this.botRigidbody = botRigidbody;
-        this.cooldown = cooldown;
         this.retry = retry;
         this.killBelowY = killBelowY;
         this.maxFreeFallSeconds = maxFreeFallSeconds;
-        this.minFreeFallSeconds = minFreeFallSeconds;
+        this.minFallSpeed = minFallSpeed;
         
         _lastWaypoint  = start;
         _lastPosition = start != null ? start.transform.position : botRigidbody.position;
@@ -48,23 +46,30 @@ public class BotRespawn
             _lastWaypoint = checkPoints.AssociatedWaypoint;
     }
 
-    public void TickFallKill(Vector3 pos, float vy)
+    public void TickFallKill(Vector3 position, float value)
     {
-        if (pos.y <= killBelowY)
+        if (position.y <= killBelowY)
         {
             Respawn(null);
             
             return;
         }
 
-        if (vy <= minFreeFallSeconds)
+        if (value <= minFallSpeed)
         {
+            if (_fallSince < 0f)
+                _fallSince = Time.time;
+            
             if (Time.time - _fallSince >= maxFreeFallSeconds)
             {
                 Respawn(null);
                 
                 _fallSince = -1f;
             }
+        }
+        else
+        {
+            _fallSince = -1f;
         }
     }
 

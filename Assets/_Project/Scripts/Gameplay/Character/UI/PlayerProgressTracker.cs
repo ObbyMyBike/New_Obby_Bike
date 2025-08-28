@@ -22,8 +22,7 @@ public class PlayerProgressTracker
             return;
         
         float pathPlayer = path.ComputeProgress(playerTransform.position);
-
+        
         barView.UpdatePlayerProgress(pathPlayer);
-        barView.AnimatePlayerProgress(pathPlayer * 100f);
     }
 }

@@ -13,10 +13,8 @@ public class BotSpawn : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float _trailChance = 0.5f;
     
     [Header("Spawn settings")]
-    [SerializeField] private CheckPoints[] _allCheckpoints;
     [SerializeField] private CheckPoints[] _extraSpawnCheckpoints;
     [SerializeField] private Waypoint _startPoint;
-    [SerializeField] private Transform _finPoint;
     [SerializeField] private LayerMask _occupancyMask;
     [SerializeField] private int _botCount = 5;
     [SerializeField] private float _spawnCheckRadius = 1f;
@@ -33,8 +31,7 @@ public class BotSpawn : MonoBehaviour
     [SerializeField, Min(0f)] private float _leaveDistance = 1.2f;
     [SerializeField] private bool _sequentialSpawn = true;
     
-    [Header("Progress Bar settings")]
-    [SerializeField] private ProgressBarView _progressBarView;
+    private ProgressBarView _progressBarView;
    
     private OriginsBuilder _originsBuilder;
     private CheckingAccessPlace _clearance;
@@ -46,12 +43,20 @@ public class BotSpawn : MonoBehaviour
     private List<SpawnOrigin> _origins;
     private ObjectPool<BotController> _botPool;
 
+    [Inject] private LevelDirector _levelDirector;
     [Inject] private NameAssigner _nameAssigner;
     [Inject] private DiContainer _container;
 
+    [Inject]
+    private void Construct(ProgressBarView progressBarView)
+    {
+        if (_progressBarView == null)
+            _progressBarView = progressBarView;
+    }
+    
     private void Start()
     {
-        if (_botPrefab == null || _startPoint == null || _finPoint == null || _progressBarView == null)
+        if (_botPrefab == null || _startPoint == null || _progressBarView == null)
             return;
 
         _originsBuilder = new OriginsBuilder(_spawnBack);
@@ -59,13 +64,20 @@ public class BotSpawn : MonoBehaviour
         _lanePicker = new LanePicker(_laneSpacing, _laneSpread);
         _origins = _originsBuilder.Build(_startPoint, _extraSpawnCheckpoints);
 
-        if (_origins.Count == 0)
+        if (_origins == null || _origins.Count == 0)
             return;
 
-        _racePath = new RacePath(_allCheckpoints);
+        _racePath =_levelDirector?.GlobalPath;
         
-        BotController ctrlOnPrefab = _botPrefab.GetComponentInChildren<BotController>(true);
-        _botPool = new ObjectPool<BotController>(ctrlOnPrefab, _botCount, PoolContainer.Root, factory: () =>
+        BotController botController = _botPrefab.GetComponentInChildren<BotController>(true);
+        
+        if (botController == null)
+        {
+            Debug.LogError("[BotSpawn] _botPrefab must contain BotController.");
+            return;
+        }
+        
+        _botPool = new ObjectPool<BotController>(botController, _botCount, PoolContainer.Root,  () =>
         {
             GameObject botObject = _container.InstantiatePrefab(_botPrefab, PoolContainer.Root);
             
@@ -73,7 +85,6 @@ public class BotSpawn : MonoBehaviour
         });
 
         _botFactory = new BotFactory(_container, _nameAssigner, _botPool, _botPresets, _trailChance);
-
         _spawnRandom = new SpawnRandom(MAX_ATTEMPTS, _retryInterval, _leaveDistance, _origins, _lanePicker, _clearance,
             _botFactory, _racePath, _progressBarView, this);
 
