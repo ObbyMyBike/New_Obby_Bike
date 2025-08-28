@@ -7,6 +7,8 @@ using Zenject;
 
 public class InternetConnectionChecker : IInternetConnectionChecker, IInitializable, IDisposable
 {
+    private const string LocalWebGlPingRelative = "StreamingAssets/net-ping.txt";
+    
     private static readonly string[] FallbackProbeUrls =
     {
         "https://www.google.com/generate_204",
@@ -65,16 +67,53 @@ public class InternetConnectionChecker : IInternetConnectionChecker, IInitializa
     {
         var list = new List<string>(4);
         
-        string self = BuildSameOriginUrl();
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            list.Add(LocalWebGlPingRelative);
+            
+            string nearIndex = BuildNearIndexUrl("StreamingAssets/net-ping.txt");
+            
+            if (!string.IsNullOrEmpty(nearIndex))
+                list.Add(nearIndex);
+
+            return list;
+        }
         
-        if (!string.IsNullOrEmpty(self))
-            list.Add(self);
+        string sameOrigin = BuildSameOriginUrl();
         
+        if (!string.IsNullOrEmpty(sameOrigin))
+            list.Add(sameOrigin);
+
         list.AddRange(FallbackProbeUrls);
         
         return list;
     }
 
+    private string BuildNearIndexUrl(string relative)
+    {
+        string abs = Application.absoluteURL;
+        if (string.IsNullOrEmpty(abs))
+            return null;
+
+        try
+        {
+            var uri = new Uri(abs);
+            var basePath = uri.AbsolutePath;
+            int lastSlash = basePath.LastIndexOf('/');
+            
+            if (lastSlash >= 0)
+                basePath = basePath.Substring(0, lastSlash + 1);
+
+            var origin = uri.GetLeftPart(UriPartial.Authority);
+            
+            return origin + basePath + relative;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+    
     private string BuildSameOriginUrl()
     {
         string abs = Application.absoluteURL;
@@ -83,10 +122,7 @@ public class InternetConnectionChecker : IInternetConnectionChecker, IInitializa
             return null;
         try
         {
-            var uri = new Uri(abs);
-            string origin = uri.GetLeftPart(UriPartial.Authority) + "/";
-            
-            return origin;
+            return BuildNearIndexUrl("StreamingAssets/net-ping.txt");
         }
         catch
         {
@@ -120,20 +156,25 @@ public class InternetConnectionChecker : IInternetConnectionChecker, IInitializa
         {
             using (UnityWebRequest req = UnityWebRequest.Get(url))
             {
+                req.SetRequestHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+                req.SetRequestHeader("Pragma", "no-cache");
+                req.SetRequestHeader("Expires", "0");
+
                 req.timeout = 3;
+                
                 yield return req.SendWebRequest();
                 
-                bool success = req.result == UnityWebRequest.Result.Success;
-                
-                if (!success)
-                {
-                    long code = req.responseCode;
-                    
-                    if (code >= 200 && code < 400)
-                        success = true;
-                }
+                bool hasHttpResponse = req.responseCode != 0;
+                bool hasFatalError = req.result == UnityWebRequest.Result.ConnectionError || req.result == UnityWebRequest.Result.DataProcessingError;
 
-                if (success)
+                if (hasHttpResponse && !hasFatalError)
+                {
+                    ok = true;
+                    
+                    break;
+                }
+                
+                if (req.responseCode != 0)
                 {
                     ok = true;
                     
