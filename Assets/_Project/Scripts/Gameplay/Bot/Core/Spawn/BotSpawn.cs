@@ -44,6 +44,7 @@ public class BotSpawn : MonoBehaviour
     private ObjectPool<BotController> _botPool;
 
     [Inject] private LevelDirector _levelDirector;
+    [Inject] private BotRegistry _botRegistry;
     [Inject] private NameAssigner _nameAssigner;
     [Inject] private DiContainer _container;
 
@@ -84,7 +85,7 @@ public class BotSpawn : MonoBehaviour
             return botObject.GetComponentInChildren<BotController>(true);
         });
 
-        _botFactory = new BotFactory(_container, _nameAssigner, _botPool, _botPresets, _trailChance);
+        _botFactory = new BotFactory(_container, _nameAssigner, _botPool, _botPresets, _trailChance, _botRegistry);
         _spawnRandom = new SpawnRandom(MAX_ATTEMPTS, _retryInterval, _leaveDistance, _origins, _lanePicker, _clearance,
             _botFactory, _racePath, _progressBarView, this);
 
@@ -104,8 +105,10 @@ public class BotSpawn : MonoBehaviour
             botRigidbody.velocity = Vector3.zero;
             botRigidbody.angularVelocity = Vector3.zero;
         }
-
+        
+        _botRegistry?.Unregister(bot);
         _botPool.Release(bot);
+        
         StartCoroutine(_spawnRandom.SpawnOne());
     }
 

@@ -25,6 +25,9 @@ public class BotController : MonoBehaviour
     [SerializeField] private float _maxFreeFallSeconds = 2.5f;
     [SerializeField] private float _minFallSpeed = -7f;
     
+    [Header("FX")]
+    [SerializeField] private float _trailEnableDelay = 0.5f;
+    
     private Rigidbody _botRigidbody;
     private LayerMask _groundMask;
     
@@ -98,28 +101,39 @@ public class BotController : MonoBehaviour
 
                     if (startWaypoint != null)
                     {
-                        Transform t = startWaypoint.transform;
-                        Vector3 forward = t.forward;
+                        Transform waypointTransform = startWaypoint.transform;
+                        Vector3 forward = waypointTransform.forward;
 
                         if (startWaypoint.NextWaypoints != null)
                         {
-                            foreach (var wp in startWaypoint.NextWaypoints)
+                            foreach (Waypoint waypoint in startWaypoint.NextWaypoints)
                             {
-                                if (wp == null) continue;
-                                Vector3 dir = wp.transform.position - t.position; dir.y = 0f;
-                                if (dir.sqrMagnitude > 1e-3f) { forward = dir.normalized; break; }
+                                if (waypoint == null)
+                                    continue;
+                                
+                                Vector3 direction = waypoint.transform.position - waypointTransform.position; direction.y = 0f;
+
+                                if (direction.sqrMagnitude > 1e-3f)
+                                {
+                                    forward = direction.normalized;
+                                    
+                                    break;
+                                }
                             }
                         }
 
-                        Vector3 position = t.position;
+                        Vector3 position = waypointTransform.position;
                         Quaternion rotation = Quaternion.LookRotation(forward, Vector3.up);
 
                         transform.SetPositionAndRotation(position, rotation);
+                        
                         if (_botRigidbody != null)
                         {
                             _botRigidbody.velocity = Vector3.zero;
                             _botRigidbody.angularVelocity = Vector3.zero;
                         }
+                        
+                        RestartTrailAfter(_trailEnableDelay);
 
                         _respawn?.SetCheckpoint(null);
                         _ai?.ResetToWaypoint(startWaypoint);
@@ -148,9 +162,35 @@ public class BotController : MonoBehaviour
         _progress = new BotProgress(transform, progressBarView, racePath, startWaypoint != null ? startWaypoint.transform.position : Vector3.zero, racePath != null ? racePath.FinishPoint : Vector3.zero);
     }
     
+    public void RestartTrailAfter(float delaySeconds) => StartCoroutine(RestartTrailCoroutine(delaySeconds));
+    
     public void ApplyPush(Vector3 velocity, float duration) => _driver?.ApplyPush(velocity, duration);
 
     public void SuspendControl(float duration) => _driver?.ApplyPush(Vector3.zero, duration);
     
     public void ForceRespawn() => _respawn?.Respawn(_ai);
+    
+    private System.Collections.IEnumerator RestartTrailCoroutine(float delay)
+    {
+        TrailRenderer[] trails = GetComponentsInChildren<TrailRenderer>(true);
+        
+        foreach (TrailRenderer trail in trails)
+        {
+            if (trail == null || !trail.enabled)
+                continue;
+            
+            trail.Clear();
+            trail.enabled = false;
+        }
+
+        yield return new WaitForSeconds(delay);
+
+        foreach (TrailRenderer trail in trails)
+        {
+            if (trail == null)
+                continue;
+            
+            trail.enabled = true;
+        }
+    }
 }

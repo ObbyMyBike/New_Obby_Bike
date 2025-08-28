@@ -22,7 +22,7 @@ public class InternetConnectionUI : MonoBehaviour
     private void Start()
     {
         if (_offlineImageRoot != null)
-            _offlineImageRoot.SetActive(false);
+            _offlineImageRoot.SetActive(_checker != null && !_checker.IsConnected);
     }
 
     private void OnEnable()
@@ -49,15 +49,9 @@ public class InternetConnectionUI : MonoBehaviour
             _retryButton.onClick.RemoveListener(OnRetryClicked);
     }
 
-    private void HandleLost()
-    {
-        _offlineImageRoot?.SetActive(true);
-    }
+    private void HandleLost() => _offlineImageRoot?.SetActive(true);
 
-    private void HandleRestored()
-    {
-        _offlineImageRoot?.SetActive(false);
-    }
+    private void HandleRestored() => _offlineImageRoot?.SetActive(false);
     
     private void OnRetryClicked()
     {

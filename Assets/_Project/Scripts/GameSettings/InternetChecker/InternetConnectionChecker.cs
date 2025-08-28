@@ -2,11 +2,17 @@ using System;
 using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
+using System.Collections.Generic;
 using Zenject;
 
-public class InternetConnectionChecker : IInternetConnectionChecker, IInitializable
+public class InternetConnectionChecker : IInternetConnectionChecker, IInitializable, IDisposable
 {
-    private const string CHECK_URL = "https://www.google.com";
+    private static readonly string[] FallbackProbeUrls =
+    {
+        "https://www.google.com/generate_204",
+        "https://httpstat.us/204",
+        "https://ya.ru/generate_204"
+    };
     
     public event Action ConnectionLost;
     public event Action Connected;
@@ -25,17 +31,9 @@ public class InternetConnectionChecker : IInternetConnectionChecker, IInitializa
         _checkInterval = Mathf.Max(1f, checkInterval);
     }
 
-    public void Initialize()
-    {
-        _checkRoutine = _coroutineRunner.StartCoroutine(CheckLoop());
-    }
+    void IInitializable.Initialize() => _checkRoutine = _coroutineRunner.StartCoroutine(CheckLoop());
 
-    public void ForceCheckNow()
-    {
-        _coroutineRunner.StartCoroutine(CheckInternetConnectionAsync());
-    }
-
-    public void Dispose()
+    void IDisposable.Dispose()
     {
         if (_checkRoutine != null)
         {
@@ -45,6 +43,54 @@ public class InternetConnectionChecker : IInternetConnectionChecker, IInitializa
                 monoBehaviour.StopCoroutine(_checkRoutine);
             
             _checkRoutine = null;
+        }
+    }
+    
+    public void ForceCheckNow() => _coroutineRunner.StartCoroutine(CheckInternetConnectionAsync());
+    
+    private void UpdateStatus(bool connectedNow)
+    {
+        if (connectedNow == _isConnected)
+            return;
+
+        _isConnected = connectedNow;
+
+        if (_isConnected)
+            Connected?.Invoke();
+        else
+            ConnectionLost?.Invoke();
+    }
+
+    private List<string> BuildProbeList()
+    {
+        var list = new List<string>(4);
+        
+        string self = BuildSameOriginUrl();
+        
+        if (!string.IsNullOrEmpty(self))
+            list.Add(self);
+        
+        list.AddRange(FallbackProbeUrls);
+        
+        return list;
+    }
+
+    private string BuildSameOriginUrl()
+    {
+        string abs = Application.absoluteURL;
+        
+        if (string.IsNullOrEmpty(abs))
+            return null;
+        try
+        {
+            var uri = new Uri(abs);
+            string origin = uri.GetLeftPart(UriPartial.Authority) + "/";
+            
+            return origin;
+        }
+        catch
+        {
+            return null;
         }
     }
     
@@ -60,31 +106,42 @@ public class InternetConnectionChecker : IInternetConnectionChecker, IInitializa
 
     private IEnumerator CheckInternetConnectionAsync()
     {
-        using (UnityWebRequest request = UnityWebRequest.Head(CHECK_URL))
+        if (Application.internetReachability == NetworkReachability.NotReachable)
         {
-            request.timeout = 2;
-#if UNITY_2020_1_OR_NEWER
-            yield return request.SendWebRequest();
-#else
-            yield return request.Send();
-#endif
+            UpdateStatus(false);
+            yield break;
+        }
+        
+        List<string> urls = BuildProbeList();
 
-            bool currentConnectionStatus = false;
-#if UNITY_2020_1_OR_NEWER
-            currentConnectionStatus = request.result == UnityWebRequest.Result.Success;
-#else
-            currentConnectionStatus = !request.isNetworkError && !request.isHttpError;
-#endif
+        bool ok = false;
 
-            if (currentConnectionStatus != _isConnected)
+        foreach (var url in urls)
+        {
+            using (UnityWebRequest req = UnityWebRequest.Get(url))
             {
-                _isConnected = currentConnectionStatus;
+                req.timeout = 3;
+                yield return req.SendWebRequest();
+                
+                bool success = req.result == UnityWebRequest.Result.Success;
+                
+                if (!success)
+                {
+                    long code = req.responseCode;
+                    
+                    if (code >= 200 && code < 400)
+                        success = true;
+                }
 
-                if (_isConnected)
-                    Connected?.Invoke();
-                else
-                    ConnectionLost?.Invoke();
+                if (success)
+                {
+                    ok = true;
+                    
+                    break;
+                }
             }
         }
+
+        UpdateStatus(ok);
     }
 }

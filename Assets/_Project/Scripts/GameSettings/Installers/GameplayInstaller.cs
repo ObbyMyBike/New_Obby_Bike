@@ -62,6 +62,10 @@ public class GameplayInstaller : MonoInstaller
         BindInternetChecker(_internetCheckInterval);
         
         Container.BindInterfacesAndSelfTo<LevelDirector>().FromComponentInHierarchy().AsSingle().NonLazy();
+        
+        BindSelfFromHierarchy<RacePlaceView>();
+        BindSingleton<BotRegistry>();
+        Container.BindInterfacesAndSelfTo<RaceRanking>().AsSingle().NonLazy();
     }
 
     private void BindConstruct<T>(params object[] args) where T : class
