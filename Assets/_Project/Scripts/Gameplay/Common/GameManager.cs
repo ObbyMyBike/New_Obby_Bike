@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _timer;
     [SerializeField] private TextMeshProUGUI _timeNowText;
     [SerializeField] private TextMeshProUGUI _bestTimeText;
+    [SerializeField] private TextMeshProUGUI _finishPlaceText;
     [SerializeField] private Pause _pause;
 
     private readonly Dictionary<int, CheckPoints> numberToCheckpoint = new Dictionary<int, CheckPoints>();
@@ -37,6 +38,7 @@ public class GameManager : MonoBehaviour
     [Inject] private SkinSaver _skinSaver;
     [Inject] private NameAssigner _nameAssigner;
     [Inject] private LevelDirector _levelDirector;
+    [Inject(Optional = true)] private BotRegistry _botRegistry;
 
     [Inject]
     public void Construct(Player player, IInput input, ProgressBarView progressBarView)
@@ -195,12 +197,72 @@ public class GameManager : MonoBehaviour
         _timeNowText.text = "Время: " + Math.Round(_time, 2);
         _bestTimeText.text = "Лучшее время: " + Math.Round(bestTime, 2);
         
+        ShowPlayerPlace();
+        
         PlayerSessionProgress.Reset();
     }
     
     public void Reload()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+    
+    public bool AdvanceToNextLevelFrom(CheckPoints fromCheckpoint)
+    {
+        if (_levelDirector == null || fromCheckpoint == null)
+            return false;
+
+        if (_levelDirector.TryGetNextLevelStartFrom(fromCheckpoint, out int nextIndex, out Waypoint nextStart))
+        {
+            _levelDirector.GoToLevel(nextIndex);
+            visitedNumbers.Clear();
+            
+            PlayerSessionProgress.CollectedCheckpoints.Clear();
+            PlayerSessionProgress.LastCheckpointNum = -1;
+            _lastCheckpointTransform = null;
+
+            RebuildLevelData();
+            TeleportPlayerBeforeCheckpoint(nextStart, _spawnBackOffset);
+
+            _didManualTeleportThisFrame = true;
+            _playerTracker = null;
+            
+            if (_player?.PlayerCharacterRoot != null && _progressBarView != null && _racePath != null && _racePath.IsValid)
+                _playerTracker = new PlayerProgressTracker(_player.PlayerCharacterRoot.transform, _progressBarView, _racePath);
+
+            UpdateProgressBar();
+            
+            return true;
+        }
+        
+        Reload();
+        
+        return false;
+    }
+    
+    
+    private void ShowPlayerPlace()
+    {
+        if (_finishPlaceText == null)
+            return;
+        
+        int finishedBefore = 0;
+
+        if (_botRegistry != null)
+        {
+            foreach (var bot in _botRegistry.All)
+            {
+                if (bot == null)
+                    continue;
+                
+                if (bot.FinishedLevelOnce)
+                    finishedBefore++;
+            }
+        }
+
+        int playerPlace = finishedBefore + 1;
+        
+        _finishPlaceText.text = $"Вы заняли {playerPlace} место";
     }
     
     private void UpdateProgressBar()
@@ -251,33 +313,9 @@ public class GameManager : MonoBehaviour
             
             if (checkPoints.IsLevelEnd && _levelDirector != null)
             {
-                if (_levelDirector.TryGetNextLevelStartFrom(checkPoints, out int nextIndex, out Waypoint nextStart))
-                {
-                    _levelDirector.GoToLevel(nextIndex);
-                    visitedNumbers.Clear();
-
-                    PlayerSessionProgress.CollectedCheckpoints.Clear();
-                    PlayerSessionProgress.LastCheckpointNum = -1;
-                    _lastCheckpointTransform = null;
-
-                    RebuildLevelData();
-                    TeleportPlayerBeforeCheckpoint(nextStart, _spawnBackOffset);
-                    _didManualTeleportThisFrame = true;
-
-                    _playerTracker = null;
-                    if (_player?.PlayerCharacterRoot != null && _progressBarView != null && _racePath != null && _racePath.IsValid)
-                        _playerTracker = new PlayerProgressTracker(_player.PlayerCharacterRoot.transform, _progressBarView, _racePath);
-
-                    UpdateProgressBar();
+                Finish();
                     
-                    return;
-                }
-                else
-                {
-                    Finish();
-                    
-                    return;
-                }
+                return;
             }
         }
         
@@ -297,6 +335,9 @@ public class GameManager : MonoBehaviour
             _playerTracker = new PlayerProgressTracker(_player.PlayerCharacterRoot.transform, _progressBarView, _racePath);
 
         UpdateProgressBar();
+        
+        _progressBarView?.UpdatePlayerProgress(0f);
+        _progressBarView?.ClearAllBotMarkers();
     }
     
     private void RebuildLevelData()
@@ -308,53 +349,55 @@ public class GameManager : MonoBehaviour
             
             allCheckpointNumbers.Clear();
             visitedNumbers.Clear();
+            numberToCheckpoint.Clear();
             
             return;
         }
         
-        _racePath = _levelDirector.GlobalPath ?? new RacePath(Array.Empty<CheckPoints>());
+        _racePath = _levelDirector.CurrentPath  ?? new RacePath(Array.Empty<CheckPoints>());
         
         allCheckpointNumbers.Clear();
         numberToCheckpoint.Clear();
         
-        IReadOnlyList<CheckPoints> allCheckpoints = _levelDirector.AllCheckpoints;
+        IReadOnlyList<CheckPoints> levelCheckpoints = _levelDirector.GetLevelCheckpoints(_levelDirector.ActiveLevelIndex);
         
-        if (allCheckpoints != null)
+        if (levelCheckpoints != null)
         {
-            for (int i = 0; i < allCheckpoints.Count; i++)
+            foreach (CheckPoints checkPoint in levelCheckpoints)
             {
-                CheckPoints checkpoint = allCheckpoints[i];
+                if (checkPoint == null)
+                    continue;
                 
-                if (checkpoint != null)
-                {
-                    allCheckpointNumbers.Add(checkpoint.Number);
-                    numberToCheckpoint[checkpoint.Number] = checkpoint;
-                }
+                allCheckpointNumbers.Add(checkPoint.Number);
+                numberToCheckpoint[checkPoint.Number] = checkPoint;
             }
         }
 
         _lastCheckpointTransform = null;
         
-        if (PlayerSessionProgress.LastCheckpointNum != -1 && allCheckpoints != null)
+        if (PlayerSessionProgress.LastCheckpointNum != -1 && levelCheckpoints != null)
         {
-            for (int i = 0; i < allCheckpoints.Count; i++)
+            foreach (CheckPoints checkPoint in levelCheckpoints)
             {
-                CheckPoints checkpoint = allCheckpoints[i];
-                
-                if (checkpoint != null && checkpoint.Number == PlayerSessionProgress.LastCheckpointNum)
+                if (checkPoint != null && checkPoint.Number == PlayerSessionProgress.LastCheckpointNum)
                 {
-                    _lastCheckpointTransform = checkpoint.transform;
+                    _lastCheckpointTransform = checkPoint.transform;
                     
                     break;
                 }
             }
         }
-        
+
         visitedNumbers.Clear();
         
         if (PlayerSessionProgress.CollectedCheckpoints != null)
+        {
             foreach (int number in PlayerSessionProgress.CollectedCheckpoints)
-                visitedNumbers.Add(number);
+            {
+                if (allCheckpointNumbers.Contains(number))
+                    visitedNumbers.Add(number);
+            }
+        }
     }
     
     private void TeleportPlayerBeforeCheckpoint(Waypoint waypoints, float backOffset)

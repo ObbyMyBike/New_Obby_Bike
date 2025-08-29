@@ -22,6 +22,7 @@ public class LevelDirector : MonoBehaviour
     private int _activeLevel;
     
     public RacePath GlobalPath  => _globalPath  ?? BuildGlobalPath();
+    public RacePath CurrentPath => _currentPath ?? BuildPathForActive();
     public IReadOnlyList<CheckPoints> AllCheckpoints => _allCheckpointsOrdered ?? (IReadOnlyList<CheckPoints>)Array.Empty<CheckPoints>();
     public int ActiveLevelIndex => _activeLevel;
     
@@ -31,6 +32,10 @@ public class LevelDirector : MonoBehaviour
         SetActiveLevel(_defaultActiveLevel);
     }
 
+    public IReadOnlyList<CheckPoints> GetLevelCheckpoints(int levelIndex) => listByLevel.TryGetValue(levelIndex, out var list) ? list : Array.Empty<CheckPoints>();
+    
+    public bool TryGetLevelStart(int levelIndex, out Waypoint start) => startByLevel.TryGetValue(levelIndex, out start) && start != null;
+    
     public bool TryGetNextLevelStartFrom(CheckPoints fromCheckpoint, out int nextLevelIndex, out Waypoint startWaypoint)
     {
         nextLevelIndex = -1;
@@ -52,15 +57,7 @@ public class LevelDirector : MonoBehaviour
         return TryGetLevelStart(nextLevelIndex, out startWaypoint);
     }
     
-    public void GoToLevel(int levelIndex)
-    {
-        SetActiveLevel(levelIndex);
-    }
-    
-    public bool TryGetLevelStart(int levelIndex, out Waypoint start)
-    {
-        return startByLevel.TryGetValue(levelIndex, out start) && start != null;
-    }
+    public void GoToLevel(int levelIndex) => SetActiveLevel(levelIndex);
     
     private void BuildCaches()
     {

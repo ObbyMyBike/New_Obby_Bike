@@ -18,8 +18,20 @@ public class MarkerController
         this.coroutineRunner = coroutineRunner;
     }
 
+    public void Stop()
+    {
+        if (_runningAnimation != null)
+        {
+            coroutineRunner?.StopCoroutine(_runningAnimation);
+            _runningAnimation = null;
+        }
+    }
+    
     public void SetInstant(float normalizedProgress)
     {
+        if (markerRect == null)
+            return;
+        
         float x = layout.EvaluateX(normalizedProgress);
         
         Vector2 position = markerRect.anchoredPosition;
@@ -29,35 +41,54 @@ public class MarkerController
 
     public void AnimateTo(float normalizedProgress)
     {
+        if (markerRect == null)
+            return;
+
         float targetX = layout.EvaluateX(normalizedProgress);
-
-        if (_runningAnimation != null)
-            coroutineRunner.StopCoroutine(_runningAnimation);
-
+        
+        Stop();
+        
         _runningAnimation = coroutineRunner.StartCoroutine(AnimateX(targetX));
     }
 
     private IEnumerator AnimateX(float targetX)
     {
+        if (markerRect == null)
+        {
+            _runningAnimation = null;
+            
+            yield break;
+        }
+        
         float elapsed = 0f;
-        float startX = markerRect.anchoredPosition.x;
+        float startX = markerRect != null ? markerRect.anchoredPosition.x : 0f;
 
         while (elapsed < animationDurationSeconds)
         {
+            if (markerRect == null)
+            {
+                _runningAnimation = null;
+                
+                yield break;
+            }
+            
             elapsed += Time.deltaTime;
             
-            float t = Mathf.Clamp01(elapsed / animationDurationSeconds);
+            float time = Mathf.Clamp01(elapsed / animationDurationSeconds);
 
             Vector2 markerPosition = markerRect.anchoredPosition;
-            markerPosition.x = Mathf.Lerp(startX, targetX, t);
+            markerPosition.x = Mathf.Lerp(startX, targetX, time);
             markerRect.anchoredPosition = markerPosition;
 
             yield return null;
         }
 
-        Vector2 finalMarkerPosition = markerRect.anchoredPosition;
-        finalMarkerPosition.x = targetX;
-        markerRect.anchoredPosition = finalMarkerPosition;
+        if (markerRect != null)
+        {
+            Vector2 finalMarkerPosition = markerRect.anchoredPosition;
+            finalMarkerPosition.x = targetX;
+            markerRect.anchoredPosition = finalMarkerPosition;
+        }
 
         _runningAnimation = null;
     }
