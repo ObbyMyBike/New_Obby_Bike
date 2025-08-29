@@ -15,6 +15,7 @@ public class ProgressBarView : MonoBehaviour
     [SerializeField] private GameObject _botMarkerPrefab;
     [SerializeField] private GameObject _playerMarkerPrefab;
     [SerializeField] private RectTransform _progressBarRect;
+    [SerializeField] private RectTransform _markersContainer;
     [SerializeField] private float _horizontalPaddingPixels = 10f;
 
     [Header("Colors and animations")]
@@ -25,14 +26,25 @@ public class ProgressBarView : MonoBehaviour
     [SerializeField] private Vector2 _botValueRange = new Vector2(0.7f, 1f);
     
     private readonly Dictionary<GameObject, MarkerController> botMarkers = new Dictionary<GameObject, MarkerController>();
+    private readonly Dictionary<GameObject, RectTransform> botMarkerRects = new Dictionary<GameObject, RectTransform>(); // НОВОЕ
     
     private HorizontalBarLayout _barLayout;
     private ColorGenerator _colorGenerator;
     private MarkerController _playerMarkerController;
-    private RectTransform _markerParent; 
+    private RectTransform _markerParent;
     private Coroutine _sliderAnimation;
 
     private RectTransform _barLayoutRect => _progressBarRect != null ? _progressBarRect : (_slider != null ? _slider.GetComponent<RectTransform>() : null);
+    private RectTransform MarkerParent
+    {
+        get
+        {
+            if (_markerParent == null)
+                EnsureMarkerParent();
+            
+            return _markerParent;
+        }
+    }
     
     private void Awake()
     {
@@ -77,7 +89,8 @@ public class ProgressBarView : MonoBehaviour
             return;
 
         GameObject prefabInstance = _playerMarkerPrefab != null ? _playerMarkerPrefab : _botMarkerPrefab;
-        GameObject markerInstance = Instantiate(prefabInstance, _progressBarRect);
+        EnsureMarkerParent();
+        GameObject markerInstance = Instantiate(prefabInstance, MarkerParent);
 
         markerInstance.TryGetComponent(out RectTransform rect);
         
@@ -104,13 +117,13 @@ public class ProgressBarView : MonoBehaviour
         if (bot == null || botMarkers.ContainsKey(bot))
             return;
 
-        GameObject markerObject = Instantiate(_botMarkerPrefab, _progressBarRect);
+        EnsureMarkerParent();
+        GameObject markerObject = Instantiate(_botMarkerPrefab, MarkerParent);
 
-        markerObject.TryGetComponent(out RectTransform rect);
-        
-        if (rect == null)
+        if (!markerObject.TryGetComponent(out RectTransform rect))
         {
             Destroy(markerObject);
+            
             return;
         }
 
@@ -121,6 +134,44 @@ public class ProgressBarView : MonoBehaviour
         controller.SetInstant(0f);
 
         botMarkers.Add(bot, controller);
+        botMarkerRects.Add(bot, rect);
+    }
+    
+    public void RemoveBotMarker(GameObject bot)
+    {
+        if (bot == null)
+            return;
+        
+        if (botMarkers.TryGetValue(bot, out MarkerController controller))
+        {
+            controller?.Stop();
+            botMarkers.Remove(bot);
+        }
+        
+        if (botMarkerRects.TryGetValue(bot, out RectTransform rect))
+        {
+            if (rect != null && rect.gameObject) 
+                Destroy(rect.gameObject);
+            
+            botMarkerRects.Remove(bot);
+        }
+    }
+    
+    public void ClearAllBotMarkers()
+    {
+        foreach (var kv in botMarkers)
+            kv.Value?.Stop();
+        
+        foreach (var kv in botMarkerRects)
+        {
+            var rect = kv.Value;
+            
+            if (rect != null && rect.gameObject)
+                Destroy(rect.gameObject);
+        }
+
+        botMarkers.Clear();
+        botMarkerRects.Clear();
     }
 
     private void EnsureInitialized()
@@ -133,19 +184,67 @@ public class ProgressBarView : MonoBehaviour
 
         if (_percentText != null)
         {
-            float current = _slider != null ? _slider.value : 0f;
+            float current = 0f;
+            if (_slider != null)
+                current = _slider.value;
+
             _percentText.text = $"{Mathf.RoundToInt(current * PERCENT_MAX)}%";
         }
 
-        RectTransform trackRect = _progressBarRect != null ? _progressBarRect : (_slider != null ? _slider.GetComponent<RectTransform>() : null);
+        RectTransform trackRect = null;
         
+        if (_progressBarRect != null)
+            trackRect = _progressBarRect;
+        else if (_slider != null && _slider.gameObject.TryGetComponent(out RectTransform rect))
+            trackRect = rect;
+
         if (trackRect == null)
             return;
 
         ForceBuildLayout(trackRect);
-        
+
         _barLayout ??= new HorizontalBarLayout(trackRect, _horizontalPaddingPixels);
         _colorGenerator ??= new ColorGenerator(_forbiddenHueRangeDeg, _botSaturationRange, _botValueRange);
+    }
+    
+    private void EnsureMarkerParent()
+    {
+        if (_markersContainer != null)
+        {
+            _markerParent = _markersContainer;
+            
+            return;
+        }
+        
+        if (_progressBarRect == null && _slider != null)
+        {
+            if (_slider.gameObject.TryGetComponent(out RectTransform sliderRect))
+                _progressBarRect = sliderRect;
+        }
+
+        if (_progressBarRect != null)
+        {
+            GameObject container = new GameObject("Markers", typeof(RectTransform));
+            
+            if (container.TryGetComponent(out RectTransform rect))
+            {
+                _markerParent = rect;
+                _markerParent.SetParent(_progressBarRect, false);
+                _markerParent.anchorMin = Vector2.zero;
+                _markerParent.anchorMax = Vector2.one;
+                _markerParent.offsetMin = Vector2.zero;
+                _markerParent.offsetMax = Vector2.zero;
+            }
+        }
+    }
+    
+    private void ForceBuildLayout(RectTransform rect)
+    {
+        if (rect.rect.width <= 0f || rect.rect.height <= 0f)
+        {
+            Canvas.ForceUpdateCanvases();
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+        }
     }
     
     private IEnumerator AnimateSliderTo(float targetValue)
@@ -177,14 +276,5 @@ public class ProgressBarView : MonoBehaviour
             _percentText.text = $"{Mathf.RoundToInt(targetValue * PERCENT_MAX)}%";
 
         _sliderAnimation = null;
-    }
-    
-    private void ForceBuildLayout(RectTransform rect)
-    {
-        if (rect.rect.width <= 0f || rect.rect.height <= 0f)
-        {
-            Canvas.ForceUpdateCanvases();
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
-        }
     }
 }

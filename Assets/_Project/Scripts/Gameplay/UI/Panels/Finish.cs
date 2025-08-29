@@ -7,6 +7,7 @@ public class Finish : MonoBehaviour
     [SerializeField] private GameObject _finishPanel;
     [SerializeField] private BotSpawn _botSpawn;
     [SerializeField] private CheckPoints _finishCheckpoint;
+    [SerializeField] private FinishRestart _finishController;
 
     [Inject] private Player _player;
     [Inject] private CameraControl _cameraControl;
@@ -23,8 +24,7 @@ public class Finish : MonoBehaviour
         {
             _gameManager.Finish();
             
-            if (_finishPanel != null)
-                _finishPanel.SetActive(true);
+            _finishPanel?.SetActive(true);
             
             if (!Application.isMobilePlatform)
             {
@@ -32,18 +32,15 @@ public class Finish : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Confined;
             }
             
-            if (_finishCheckpoint != null)
-                _finishCheckpoint.StartFinishLoopEffect();
-            
+            _finishCheckpoint?.StartFinishLoopEffect();
             _player.SetInput(new DisabledInput());
-            
-            if (_cameraControl != null)
-                _cameraControl.StartAutoOrbit(_player.PlayerCharacterRoot.transform);
+            _cameraControl?.StartAutoOrbit(_player.PlayerCharacterRoot.transform);
+            _finishController?.OnLevelFinished(_finishCheckpoint);
             
             return;
         }
         
         if (other.TryGetComponent(out BotController bot))
-            _botSpawn?.DespawnAndRespawn(bot);
+            _botSpawn?.TryDespawnAndRespawn(bot);
     }
 }

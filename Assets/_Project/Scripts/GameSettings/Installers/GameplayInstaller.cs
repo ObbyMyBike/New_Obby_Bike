@@ -48,6 +48,7 @@ public class GameplayInstaller : MonoInstaller
         BindInterfacesFromHierarchy<UIController>();
         BindSelfFromHierarchy<Restart>();
         BindSelfFromHierarchy<CheckPoints>();
+        BindSelfFromHierarchy<FinishRestart>();
         BindPrefab(_playerPrefab, bindInterfaces: true);
         BindSelfFromHierarchy<PlayerSkin>();
         

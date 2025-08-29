@@ -12,6 +12,7 @@ public class CameraControl : MonoBehaviour
     [SerializeField] private float _sensitivity = 10f;
     [SerializeField] private float _distance = 5f;
     [SerializeField] private float _height = 2.5f;
+    [SerializeField] private float _mobileHorizontalDistance = 3f;
 
     [Header("Over The Shoulder")]
     [SerializeField] private float _offsetPosition = 0f;
@@ -40,6 +41,7 @@ public class CameraControl : MonoBehaviour
     private int _cameraTouchId = -1;
     private float _yaw;
     private float _pitch;
+    private float _inputGraceUntil = 0f;
     private bool _autoOrbit;
 
     [Inject]
@@ -61,10 +63,16 @@ public class CameraControl : MonoBehaviour
     {
         gameObject.tag = "MainCamera";
         
+        IsPause = false;
+        _cameraTouchId = -1;
+        _autoOrbit = false;
+        
         _yaw = NormalizeAngle180(0.7132265f);
         _pitch = NormalizeAngle180(3.5332987f);
-        _autoOrbit = false;
         _baseOffset = new Vector3(_offsetPosition, _height, -_distance);
+        
+        if (Application.isMobilePlatform && Screen.width > Screen.height)
+            _distance = _mobileHorizontalDistance;
     }
 
     private void OnEnable()
@@ -90,7 +98,7 @@ public class CameraControl : MonoBehaviour
         if (_playerTransform == null || IsPause)
             return;
 
-        if (_uiInfo != null && _uiInfo.IsDown)
+        if (_uiInfo != null && _uiInfo.IsDown && Time.unscaledTime >= _inputGraceUntil)
             return;
 
         if (_autoOrbit)
@@ -126,6 +134,14 @@ public class CameraControl : MonoBehaviour
     }
 
     public void StopAutoOrbit() => _autoOrbit = false;
+    
+    public void EnableManualControlAfterLevelChange()
+    {
+        _autoOrbit = false;
+        _cameraTouchId = -1;
+        IsPause = false;
+        _inputGraceUntil = Time.unscaledTime + 0.25f;
+    }
 
     private float NormalizeAngle180(float angle)
     {
@@ -198,7 +214,7 @@ public class CameraControl : MonoBehaviour
             {
                 isRotating = Input.GetMouseButton(0);
 
-                if (isRotating && EventSystem.current != null && EventSystem.current.IsPointerOverGameObject())
+                if (isRotating && EventSystem.current != null && Time.unscaledTime >= _inputGraceUntil && EventSystem.current.IsPointerOverGameObject())
                     isRotating = false;
 
                 if (isRotating)
@@ -219,15 +235,6 @@ public class CameraControl : MonoBehaviour
                 _yaw = NormalizeAngle180(_yaw);
                 _pitch = NormalizeAngle180(_pitch);
             }
-        }
-
-        if (!ignoreUserInput && isRotating && (Mathf.Abs(deltaX) > MANUAL_ROT_EPS || Mathf.Abs(deltaY) > MANUAL_ROT_EPS))
-        {
-            int inversionX = _inversionX == InversionX.Disabled ? 1 : -1;
-            int inversionY = _inversionY == InversionY.Disabled ? -1 : 1;
-
-            _yaw = NormalizeAngle180(_yaw + deltaX * _sensitivity * Time.deltaTime * inversionX);
-            _pitch = NormalizeAngle180(_pitch + deltaY * _sensitivity * Time.deltaTime * inversionY);
         }
         
         Transform target = _orbitTarget != null ? _orbitTarget : _playerTransform;
